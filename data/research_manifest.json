@@ -1,0 +1,31 @@
+{
+  "records": [
+    {
+      "image_path": "C:\\Users\\LIU\\Downloads\\卒業研究\\data\\inputs\\face.png",
+      "diseases": [
+        "虫歯"
+      ],
+      "severity": 0.793,
+      "prompt": "虫歯",
+      "reference_paths": [
+        "C:\\Users\\LIU\\Downloads\\卒業研究\\data\\references\\虫歯\\171117626114301.jpg"
+      ]
+    },
+    {
+      "image_path": "C:\\Users\\LIU\\Downloads\\卒業研究\\data\\inputs\\face.png",
+      "diseases": [
+        "虫歯"
+      ],
+      "severity": 0.312,
+      "prompt": "虫歯",
+      "reference_paths": [
+        "C:\\Users\\LIU\\Downloads\\卒業研究\\data\\references\\虫歯\\171117626114301.jpg"
+      ]
+    }
+  ],
+  "diseases": [
+    "虫歯",
+    "出っ歯",
+    "すきっ歯"
+  ]
+}

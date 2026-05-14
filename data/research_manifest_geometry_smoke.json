@@ -1,0 +1,30 @@
+{
+  "records": [
+    {
+      "image_path": "C:\\Users\\LIU\\Downloads\\卒業研究\\data\\inputs\\face.png",
+      "diseases": [
+        "出っ歯"
+      ],
+      "severity": 0.793,
+      "prompt": "出っ歯",
+      "reference_paths": [
+        "C:\\Users\\LIU\\Downloads\\卒業研究\\data\\references\\出っ歯\\rei_crown44b1-1.jpg"
+      ]
+    },
+    {
+      "image_path": "C:\\Users\\LIU\\Downloads\\卒業研究\\data\\inputs\\face.png",
+      "diseases": [
+        "出っ歯"
+      ],
+      "severity": 0.312,
+      "prompt": "出っ歯",
+      "reference_paths": [
+        "C:\\Users\\LIU\\Downloads\\卒業研究\\data\\references\\出っ歯\\rei_crown44b1-1.jpg"
+      ]
+    }
+  ],
+  "diseases": [
+    "出っ歯",
+    "すきっ歯"
+  ]
+}

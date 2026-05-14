@@ -1,0 +1,18 @@
+{
+  "records": [
+    {
+      "source": "sample_face_cc0.jpg",
+      "disease": "gingivitis",
+      "disease_text": "severe gingivitis with inflamed red swollen gingiva around the visible teeth",
+      "reference": "gingivitis/gingivitis_ref_cc0.jpg",
+      "save_debug_warp": true
+    },
+    {
+      "source": "sample_face_cc0.jpg",
+      "disease": "malocclusion",
+      "disease_text": "moderate dental malocclusion with visible tooth alignment change in the mouth region",
+      "reference": "malocclusion/open_bite_ref_cc_by_sa.jpg",
+      "save_debug_warp": true
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "common": {
+    "baseline_prompt": "RAW clinical photo, realistic DSLR portrait, documentary medical photography, same person as the input image, preserve identity, preserve facial proportions, preserve hairstyle, preserve lighting, preserve camera angle, preserve background, preserve skin texture, natural pores, realistic lips, realistic gingiva, realistic oral cavity, high realism, non stylized",
+    "negative_prompt": "anime, cartoon, illustration, painting, cgi, 3d render, stylized, beauty filter, excessive makeup, plastic skin, doll face, fantasy, unreal teeth, extra teeth, duplicated lips, malformed gums, deformed mouth, low detail, blur, smooth skin, glossy skin, altered identity, different person",
+    "baseline_guidance_scale": 4.5,
+    "baseline_steps": 24,
+    "baseline_denoise_strength": 0.12
+  },
+  "diseases": {
+    "虫歯": {
+      "prompts": {
+        "mild": "mild visible dental caries, small localized tooth discoloration and early decay, realistic enamel texture",
+        "moderate": "moderate visible dental caries, clear brown tooth decay and cavity-like damage on visible teeth",
+        "severe": "severe visible dental caries, extensive dark tooth decay and clearly damaged tooth surface"
+      },
+      "guidance_scale": 6.4,
+      "steps": 34,
+      "denoise_strength": 0.24
+    },
+    "出っ歯": {
+      "prompts": {
+        "mild": "mild maxillary protrusion, slightly forward upper teeth, realistic orthodontic appearance",
+        "moderate": "moderate maxillary protrusion, clearly forward upper front teeth, realistic dental alignment change",
+        "severe": "severe maxillary protrusion, strongly protruding upper front teeth with medically plausible appearance"
+      },
+      "guidance_scale": 6.2,
+      "steps": 34,
+      "denoise_strength": 0.22
+    },
+    "すきっ歯": {
+      "prompts": {
+        "mild": "mild diastema, slightly visible gap between front teeth, realistic tooth spacing",
+        "moderate": "moderate diastema, clear gap between visible front teeth, realistic dental spacing change",
+        "severe": "severe diastema, large visible spacing between front teeth with medically plausible appearance"
+      },
+      "guidance_scale": 6.2,
+      "steps": 34,
+      "denoise_strength": 0.22
+    }
+  }
+}

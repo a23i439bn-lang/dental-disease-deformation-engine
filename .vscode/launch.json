@@ -1,0 +1,33 @@
+{
+  "version": "0.2.0",
+  "inputs": [
+    {
+      "id": "inputImage",
+      "type": "promptString",
+      "description": "顔画像のパスを入力してください",
+      "default": "data\\face.png"
+    }
+  ],
+  "configurations": [
+    {
+      "name": "Run generate.py",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}\\generate.py",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": [
+        "--input",
+        "${input:inputImage}",
+        "--output-dir",
+        "outputs\\sample_run",
+        "--mode",
+        "disease",
+        "--disease",
+        "gingivitis",
+        "--strength",
+        "moderate"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "baseline_prompt": "Photorealistic clinical dental photography of healthy teeth without visible decay.",
+  "mild": "Photorealistic clinical dental photography of mild dental caries, slight localized discoloration and early tooth decay.",
+  "moderate": "Photorealistic clinical dental photography of moderate dental caries, clearly visible brown decay and cavity-like damage on visible teeth.",
+  "severe": "Photorealistic clinical dental photography of severe dental caries, extensive dark decay and obviously damaged tooth surface."
+}

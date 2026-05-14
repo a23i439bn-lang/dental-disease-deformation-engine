@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+outputs/
+*.pth
+*.pt
+*.ckpt
+*.log
+*.png
+*.jpg
+*.jpeg
+*.zip

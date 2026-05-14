@@ -1,0 +1,16 @@
+{
+  "model": {
+    "model_id": "runwayml/stable-diffusion-v1-5"
+  },
+  "training": {
+    "lr": 1e-5,
+    "batch_size": 2,
+    "epochs": 1,
+    "gradient_clip": 1.0
+  },
+  "inference": {
+    "guidance_scale": 7.5,
+    "num_inference_steps": 30,
+    "device": "cuda"
+  }
+}
