@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+"""disease-aware パイプライン全体の学習スクリプト。
+
+変形、テクスチャ、描画条件付けまで含めて学習したいときの入口。
+現在の幾何-only検証より後の段階で主に使う。
+"""
+
 import argparse
 import json
 from pathlib import Path

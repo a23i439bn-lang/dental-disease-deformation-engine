@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+"""疾患名と severity を数値ベクトルへ変換するエンコーダ。
+
+複数疾患のmulti-hotと重症度から、下流モデルが使いやすい
+disease embedding を作る。
+"""
+
 from dataclasses import dataclass
 
 import torch

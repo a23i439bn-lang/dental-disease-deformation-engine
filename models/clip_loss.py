@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+"""生成画像が疾患プロンプトに合っているかを測る補助loss。
+
+CLIP系の表現を使って、見た目の意味的な整合性を学習へ返す目的のコード。
+"""
+
 from dataclasses import dataclass
 from typing import Iterable
 

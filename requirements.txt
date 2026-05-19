@@ -3,3 +3,6 @@ transformers
 torch
 accelerate
 safetensors
+opencv-python
+mediapipe
+numpy

@@ -1,5 +1,12 @@
 from __future__ import annotations
 
+"""変形・テクスチャ・描画を束ねる中核パイプライン。
+
+DenseWarpLayer で形を動かし、
+TextureBranch で見た目を足し、
+必要なら Diffusion Renderer で最終画像を作る。
+"""
+
 from dataclasses import asdict, dataclass
 from typing import Any
 

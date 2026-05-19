@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+"""ランドマークをどの方向へどれだけ動かすかを予測するモデル。
+
+疾患embeddingを受け取り、468点の各ランドマークに対する delta を返す。
+「形を疾患化する」担当の主役モデル。
+"""
+
 import os
 from dataclasses import dataclass
 

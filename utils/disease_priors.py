@@ -13,31 +13,37 @@ MOUTH_INDICES = [
 ]
 ANCHOR_INDICES = [1, 4, 6, 8, 9, 10, 33, 61, 93, 127, 152, 172, 197, 234, 263, 291, 323, 356, 389, 454]
 INNER_MOUTH_INDICES = [78, 95, 88, 178, 87, 14, 317, 402, 318, 324, 308, 415, 310, 311, 312, 13, 82, 81, 80, 191]
+UPPER_INNER_LIP_INDICES = [82, 13, 312, 311, 310]
+LOWER_INNER_LIP_INDICES = [80, 191, 78, 95, 88]
+LEFT_FRONT_GAP_INDICES = [82, 81, 80]
+RIGHT_FRONT_GAP_INDICES = [312, 311, 310]
 
 
 STRUCTURAL_DISEASE_SCALES = {
     "maxillary_protrusion": 0.046,
     "diastema": 0.036,
+    "open_bite": 0.040,
 }
 
 DISEASE_NAME_ALIASES = {
     "maxillary_protrusion": {
         "出っ歯",
-        "蜃ｺ縺｣豁ｯ",
         "maxillary_protrusion",
         "protrusion",
-        "open_bite",
         "malocclusion",
     },
     "diastema": {
         "すきっ歯",
-        "縺吶″縺｣豁ｯ",
         "diastema",
         "spacing",
     },
+    "open_bite": {
+        "開咬",
+        "open_bite",
+        "anterior_open_bite",
+    },
     "caries": {
         "虫歯",
-        "陌ｫ豁ｯ",
         "caries",
         "dental_caries",
     },
@@ -58,6 +64,57 @@ def select_structural_disease(disease_names: list[str]) -> str | None:
         if canonical in STRUCTURAL_DISEASE_SCALES:
             return canonical
     return None
+
+
+def build_template_delta(
+    source_landmarks: torch.Tensor,
+    disease_name: str,
+    severity: torch.Tensor | float,
+) -> torch.Tensor:
+    if source_landmarks.ndim != 3:
+        raise ValueError(f"Expected source_landmarks to have shape (B, 468, 2), got {tuple(source_landmarks.shape)}")
+
+    canonical = canonicalize_disease_name(disease_name)
+    delta = torch.zeros_like(source_landmarks)
+    mouth = source_landmarks[:, MOUTH_INDICES]
+    mouth_width = (mouth[:, :, 0].max(dim=1).values - mouth[:, :, 0].min(dim=1).values).clamp_min(1.0)
+    mouth_height = (mouth[:, :, 1].max(dim=1).values - mouth[:, :, 1].min(dim=1).values).clamp_min(1.0)
+
+    if not torch.is_tensor(severity):
+        severity_tensor = torch.tensor([severity], device=source_landmarks.device, dtype=source_landmarks.dtype)
+    else:
+        severity_tensor = severity.to(device=source_landmarks.device, dtype=source_landmarks.dtype)
+    if severity_tensor.ndim == 2 and severity_tensor.shape[-1] == 1:
+        severity_tensor = severity_tensor.squeeze(-1)
+    if severity_tensor.ndim == 0:
+        severity_tensor = severity_tensor.unsqueeze(0)
+    if severity_tensor.ndim != 1:
+        raise ValueError(f"Expected severity to have shape (B,), (B, 1), or scalar, got {tuple(severity_tensor.shape)}")
+    if severity_tensor.shape[0] == 1 and source_landmarks.shape[0] > 1:
+        severity_tensor = severity_tensor.expand(source_landmarks.shape[0])
+    if severity_tensor.shape[0] != source_landmarks.shape[0]:
+        raise ValueError("severity batch size must match source_landmarks batch size")
+
+    severity_scale = severity_tensor.clamp(0.0, 1.5).view(-1, 1)
+
+    if canonical == "maxillary_protrusion":
+        x_shift = mouth_width.view(-1, 1) * (0.10 * severity_scale + 0.03)
+        y_shift = mouth_height.view(-1, 1) * (0.02 * severity_scale)
+        delta[:, UPPER_INNER_LIP_INDICES, 0] += x_shift
+        delta[:, UPPER_INNER_LIP_INDICES, 1] -= y_shift
+        delta[:, [13], 0] += x_shift * 0.35
+    elif canonical == "diastema":
+        x_shift = mouth_width.view(-1, 1) * (0.07 * severity_scale + 0.02)
+        delta[:, LEFT_FRONT_GAP_INDICES, 0] -= x_shift
+        delta[:, RIGHT_FRONT_GAP_INDICES, 0] += x_shift
+    elif canonical == "open_bite":
+        gap = mouth_height.view(-1, 1) * (0.22 * severity_scale + 0.05)
+        delta[:, UPPER_INNER_LIP_INDICES, 1] -= gap
+        delta[:, LOWER_INNER_LIP_INDICES, 1] += gap
+    else:
+        raise KeyError(f"Unsupported template disease '{disease_name}' (canonical: '{canonical}')")
+
+    return delta
 
 
 def build_teacher_target_landmarks(

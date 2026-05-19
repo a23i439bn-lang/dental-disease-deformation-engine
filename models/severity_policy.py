@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+"""severity の扱いを補助するモデル。
+
+疾患の強さをどう反映させるかを整理するための部品で、
+強度制御を学習化したいときの拡張点になる。
+"""
+
 from dataclasses import dataclass
 from typing import Any
 

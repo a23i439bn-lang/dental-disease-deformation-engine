@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+"""学習済みの disease-aware パイプライン全体を推論する入口。
+
+Deformation、Texture、Renderer をまとめて通し、
+最終的な rendered.png を出す本番寄りの推論スクリプト。
+"""
+
 import argparse
 import json
 from pathlib import Path

@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+"""変形後の画像へ局所的なテクスチャ変化を足すモデル。
+
+虫歯や歯肉炎のように「形」だけでなく「見た目」も変える必要がある
+疾患を扱うための支流。
+"""
+
 from dataclasses import dataclass
 
 import torch

@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+"""変形専用ネットワークを学習するスクリプト。
+
+teacher target landmark を作り、
+DeformationPolicyNetwork が疾患らしい形へ寄るように学習する。
+"""
+
 import argparse
 import json
 import os

@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+"""入力画像と疾患ラベルから学習用サンプルを組み立てるコード。
+
+画像読込、ランドマーク取得、multi-hot化、severity付与など、
+学習/推論前処理の土台を担当する。
+"""
+
 import json
 import os
 import random
