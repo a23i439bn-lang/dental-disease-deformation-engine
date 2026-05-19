@@ -1,0 +1,29 @@
+{
+  "input": "C:\\Users\\LIU\\Downloads\\卒業研究1\\data\\inputs\\face.png",
+  "detector_mode": "mediapipe_tasks_face_landmarker",
+  "disease": "openbite",
+  "severity": 1.2,
+  "bbox": {
+    "x_min": 1197,
+    "y_min": 1472,
+    "x_max": 1683,
+    "y_max": 1706
+  },
+  "mouth_roi_shape": [
+    234,
+    486,
+    3
+  ],
+  "teeth_pixels": 13592,
+  "geometry_masks": [
+    "center",
+    "full",
+    "left",
+    "lower",
+    "right",
+    "upper",
+    "upper_center"
+  ],
+  "delta_abs_mean": 0.8195555806159973,
+  "delta_abs_max": 33.4456901550293
+}

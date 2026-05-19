@@ -1,0 +1,29 @@
+{
+  "input": "C:\\Users\\LIU\\Downloads\\base.jpg",
+  "detector_mode": "mediapipe_tasks_face_landmarker",
+  "disease": "protrusion",
+  "severity": 0.4,
+  "bbox": {
+    "x_min": 451,
+    "y_min": 800,
+    "x_max": 726,
+    "y_max": 943
+  },
+  "mouth_roi_shape": [
+    143,
+    275,
+    3
+  ],
+  "teeth_pixels": 2664,
+  "geometry_masks": [
+    "center",
+    "full",
+    "left",
+    "lower",
+    "right",
+    "upper",
+    "upper_center"
+  ],
+  "delta_abs_mean": 0.1442803293466568,
+  "delta_abs_max": 6.397420406341553
+}

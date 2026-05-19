@@ -1,0 +1,19 @@
+{
+  "input": "C:\\Users\\LIU\\Downloads\\007776139.jpg",
+  "detector_mode": "mediapipe_tasks_face_landmarker",
+  "disease": "protrusion",
+  "severity": 0.8,
+  "bbox": {
+    "x_min": 417,
+    "y_min": 244,
+    "x_max": 567,
+    "y_max": 335
+  },
+  "mouth_roi_shape": [
+    91,
+    150,
+    3
+  ],
+  "delta_abs_mean": 0.8777849078178406,
+  "delta_abs_max": 4.367974281311035
+}

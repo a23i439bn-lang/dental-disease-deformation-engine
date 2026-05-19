@@ -1,0 +1,20 @@
+{
+  "input": "C:\\Users\\LIU\\Downloads\\007776139.jpg",
+  "detector_mode": "mediapipe_tasks_face_landmarker",
+  "disease": "spacing",
+  "severity": 0.8,
+  "bbox": {
+    "x_min": 417,
+    "y_min": 244,
+    "x_max": 567,
+    "y_max": 335
+  },
+  "mouth_roi_shape": [
+    91,
+    150,
+    3
+  ],
+  "teeth_pixels": 854,
+  "delta_abs_mean": 0.18868328630924225,
+  "delta_abs_max": 5.553182125091553
+}
