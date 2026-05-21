@@ -1,0 +1,30 @@
+{
+  "input": "C:\\Users\\LIU\\Downloads\\卒業研究1\\data\\inputs_normal\\ffhq_subset\\00002.png",
+  "detector_mode": "mediapipe_tasks_face_landmarker",
+  "disease": "caries",
+  "severity": 0.2,
+  "bbox": {
+    "x_min": 79,
+    "y_min": 161,
+    "x_max": 171,
+    "y_max": 212
+  },
+  "mouth_roi_shape": [
+    51,
+    92,
+    3
+  ],
+  "teeth_pixels": 33,
+  "geometry_masks": [
+    "center",
+    "full",
+    "left",
+    "lower",
+    "right",
+    "upper",
+    "upper_center"
+  ],
+  "delta_abs_mean": 0.0,
+  "delta_abs_max": 0.0,
+  "texture_pixels": 203
+}

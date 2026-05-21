@@ -1,0 +1,19 @@
+{
+  "input_dir": "C:\\Users\\LIU\\Downloads\\卒業研究1\\data\\inputs_normal\\ffhq_subset",
+  "output_dir": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs\\mouth_template_sweep",
+  "num_images": 10,
+  "diseases": [
+    "protrusion",
+    "openbite",
+    "spacing",
+    "caries"
+  ],
+  "severities": [
+    "0.2",
+    "0.5",
+    "0.8",
+    "1.2"
+  ],
+  "num_records": 160,
+  "summary_table": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs\\mouth_template_sweep\\summary_table.csv"
+}

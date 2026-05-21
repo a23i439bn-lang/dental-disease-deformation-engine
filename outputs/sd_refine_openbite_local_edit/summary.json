@@ -1,0 +1,47 @@
+{
+  "input": "C:\\Users\\LIU\\Downloads\\卒業研究1 - コピー\\data\\inputs\\face.png",
+  "detector_mode": "mediapipe_tasks_face_landmarker",
+  "disease": "openbite",
+  "severity": 1.0,
+  "bbox": {
+    "x_min": 1197,
+    "y_min": 1472,
+    "x_max": 1683,
+    "y_max": 1706
+  },
+  "mouth_roi_shape": [
+    234,
+    486,
+    3
+  ],
+  "teeth_pixels": 13592,
+  "geometry_masks": [
+    "center",
+    "full",
+    "gap_core",
+    "left",
+    "left_central",
+    "lower",
+    "right",
+    "right_central",
+    "upper",
+    "upper_center"
+  ],
+  "delta_abs_mean": 0.6829630136489868,
+  "delta_abs_max": 27.871414184570312,
+  "texture_pixels": 0,
+  "disease_edit_pixels": 18725,
+  "sd_refine": {
+    "enabled": true,
+    "mode": "local_edit",
+    "model_id": "runwayml/stable-diffusion-v1-5",
+    "device": "cpu",
+    "steps": 12,
+    "guidance_scale": 4.5,
+    "strength": 0.2,
+    "seed": 1234,
+    "prompt": "realistic teeth, natural dental appearance, clinical dental photo, realistic oral cavity, high detail, preserve the same person, preserve mouth structure, anterior open bite, visible gap between upper and lower front teeth, pronounced but realistic medically plausible change",
+    "negative_prompt": "extra teeth, blurry teeth, malformed mouth, deformed face, duplicate teeth, ugly, cartoon, illustration, painting, cgi, 3d render, stylized, altered identity, different person",
+    "mask_pixels": 18725
+  }
+}

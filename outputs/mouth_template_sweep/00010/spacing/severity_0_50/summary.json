@@ -1,0 +1,30 @@
+{
+  "input": "C:\\Users\\LIU\\Downloads\\卒業研究1\\data\\inputs_normal\\ffhq_subset\\00010.png",
+  "detector_mode": "mediapipe_tasks_face_landmarker",
+  "disease": "spacing",
+  "severity": 0.5,
+  "bbox": {
+    "x_min": 80,
+    "y_min": 158,
+    "x_max": 173,
+    "y_max": 213
+  },
+  "mouth_roi_shape": [
+    55,
+    93,
+    3
+  ],
+  "teeth_pixels": 57,
+  "geometry_masks": [
+    "center",
+    "full",
+    "left",
+    "lower",
+    "right",
+    "upper",
+    "upper_center"
+  ],
+  "delta_abs_mean": 0.021244043484330177,
+  "delta_abs_max": 1.6895833015441895,
+  "texture_pixels": 0
+}

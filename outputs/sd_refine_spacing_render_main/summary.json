@@ -1,0 +1,49 @@
+{
+  "input": "C:\\Users\\LIU\\Downloads\\卒業研究1 - コピー\\data\\inputs\\face.png",
+  "detector_mode": "mediapipe_tasks_face_landmarker",
+  "disease": "spacing",
+  "severity": 1.0,
+  "bbox": {
+    "x_min": 1197,
+    "y_min": 1472,
+    "x_max": 1683,
+    "y_max": 1706
+  },
+  "mouth_roi_shape": [
+    234,
+    486,
+    3
+  ],
+  "teeth_pixels": 13592,
+  "geometry_masks": [
+    "center",
+    "front_pair",
+    "full",
+    "gap_core",
+    "left",
+    "left_central",
+    "lower",
+    "right",
+    "right_central",
+    "upper",
+    "upper_center"
+  ],
+  "delta_abs_mean": 0.8156374096870422,
+  "delta_abs_max": 52.873382568359375,
+  "texture_pixels": 5675,
+  "disease_edit_pixels": 7873,
+  "sd_refine": {
+    "enabled": true,
+    "mode": "local_edit",
+    "model_id": "runwayml/stable-diffusion-v1-5",
+    "device": "cpu",
+    "steps": 12,
+    "guidance_scale": 4.5,
+    "strength": 0.2,
+    "seed": 1234,
+    "prompt": "realistic teeth, natural dental appearance, clinical dental photo, realistic oral cavity, high detail, preserve the same person, preserve mouth structure, diastema between upper incisors, realistic tooth spacing, pronounced but realistic medically plausible change",
+    "negative_prompt": "extra teeth, blurry teeth, malformed mouth, deformed face, duplicate teeth, ugly, cartoon, illustration, painting, cgi, 3d render, stylized, altered identity, different person",
+    "mask_pixels": 7873
+  },
+  "renderer_condition_enabled": true
+}
