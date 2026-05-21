@@ -4,7 +4,7 @@
 
 ## 1. 顔写真
 
-- File: `data/inputs/sample_face_cc0.jpg`
+- File: `data/inputs_normal/sample_face_cc0.jpg`
 - Source: Wikimedia Commons, `File:Face portrait (Unsplash).jpg`
 - URL: https://commons.wikimedia.org/wiki/File:Face_portrait_(Unsplash).jpg
 - License: CC0 1.0

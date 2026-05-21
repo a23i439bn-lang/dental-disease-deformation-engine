@@ -23,6 +23,8 @@ import torch.nn.functional as F
 from PIL import Image, ImageDraw
 from diffusers import ControlNetModel, StableDiffusionControlNetImg2ImgPipeline, UniPCMultistepScheduler
 
+from utils.disease_priors import resolve_preset_disease_name
+
 
 DEFAULT_MODEL_ID = "SG161222/Realistic_Vision_V5.1_noVAE"
 DEFAULT_CONTROLNET_ID = "lllyasviel/sd-controlnet-canny"
@@ -313,7 +315,10 @@ class DenseFlowWarpingModule:
 
 
 def get_disease_setting(preset_name: str) -> dict[str, Any]:
-    return DISEASE_SETTINGS.get(preset_name, DISEASE_SETTINGS["normal"])
+    if preset_name == "normal":
+        return DISEASE_SETTINGS["normal"]
+    resolved_name = resolve_preset_disease_name(preset_name, DISEASE_SETTINGS.keys())
+    return DISEASE_SETTINGS.get(resolved_name, DISEASE_SETTINGS["normal"])
 
 
 def resolve_strength_value(strength_label: str, override: float | None = None) -> float:
@@ -330,6 +335,7 @@ def apply_disease_landmark_prior(
     gums_mean: float,
     mode: str,
 ) -> np.ndarray:
+    preset_name = resolve_preset_disease_name(preset_name, DISEASE_SETTINGS.keys())
     settings = get_disease_setting(preset_name)
     bias = settings.get("bias", np.array([0.0, 0.0], dtype=np.float32))
     if preset_name in {"出っ歯", "すきっ歯"}:
@@ -387,16 +393,18 @@ def build_preset(mode: str, disease_name: str, strength: str, preset_data: dict[
             strength_label="baseline",
             denoise_strength=common.get("baseline_denoise_strength", 0.12),
         )
-    if disease_name not in diseases:
+    try:
+        resolved_name = resolve_preset_disease_name(disease_name, diseases.keys())
+    except KeyError as exc:
         available = ", ".join(sorted(diseases.keys()))
-        raise KeyError(f"Unknown disease preset '{disease_name}'. Available: {available}")
-    disease = diseases[disease_name]
+        raise KeyError(f"Unknown disease preset '{disease_name}'. Available: {available}") from exc
+    disease = diseases[resolved_name]
     prompt_map = disease.get("prompts", {})
     if strength not in prompt_map:
         available = ", ".join(sorted(prompt_map.keys()))
-        raise KeyError(f"Unknown strength '{strength}' for disease '{disease_name}'. Available: {available}")
+        raise KeyError(f"Unknown strength '{strength}' for disease '{resolved_name}'. Available: {available}")
     return DiseasePreset(
-        name=disease_name,
+        name=resolved_name,
         prompt=prompt_map[strength],
         negative_prompt=disease.get("negative_prompt", common.get("negative_prompt", DEFAULT_NEGATIVE_PROMPT)),
         guidance_scale=disease.get("guidance_scale", common.get("guidance_scale", 6.5)),

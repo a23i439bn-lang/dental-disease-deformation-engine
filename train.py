@@ -1,4 +1,7 @@
 from __future__ import annotations
+# このファイルの役割:
+# Stable Diffusion ベースの最小学習スクリプトです。
+# 画像と prompt の組を読み込み、Diffusion モデルを更新します。
 
 """disease-aware パイプライン全体の学習スクリプト。
 
@@ -88,7 +91,7 @@ def collate_fn(batch: list[dict[str, Any]]) -> dict[str, Any]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Minimal stable UNet fine-tuning for Stable Diffusion.")
     parser.add_argument("--config", default="config.yaml")
-    parser.add_argument("--train-data-dir", default="data/inputs")
+    parser.add_argument("--train-data-dir", default="data/dataset/normal")
     parser.add_argument("--output-dir", default="outputs/minimal_sd_train")
     parser.add_argument("--image-size", type=int, default=512)
     parser.add_argument("--default-prompt", default="a clean portrait photo")

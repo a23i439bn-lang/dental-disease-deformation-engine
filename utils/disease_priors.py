@@ -1,4 +1,7 @@
 from __future__ import annotations
+# このファイルの役割:
+# 疾患ごとの教師変形やルールベース priors をまとめたモジュールです。
+# 各疾患でどのランドマークをどう動かすかの基礎ルールを定義します。
 
 import math
 
@@ -46,6 +49,7 @@ DISEASE_NAME_ALIASES = {
         "虫歯",
         "caries",
         "dental_caries",
+        "dental caries",
     },
 }
 
@@ -56,6 +60,18 @@ def canonicalize_disease_name(name: str) -> str:
         if name in aliases or lowered in aliases:
             return canonical
     return lowered
+
+
+def resolve_preset_disease_name(name: str, available_names: list[str] | tuple[str, ...] | set[str]) -> str:
+    available_lookup = {str(item): str(item) for item in available_names}
+    if name in available_lookup:
+        return available_lookup[name]
+
+    canonical = canonicalize_disease_name(name)
+    for candidate in available_lookup.values():
+        if canonicalize_disease_name(candidate) == canonical:
+            return candidate
+    raise KeyError(f"Unknown disease preset '{name}'")
 
 
 def select_structural_disease(disease_names: list[str]) -> str | None:

@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from utils.disease_priors import resolve_preset_disease_name
+
 
 def load_disease_prompts(path: str | Path = "presets/disease_prompts.json") -> dict[str, Any]:
     return json.loads(Path(path).read_text(encoding="utf-8"))
@@ -38,7 +40,12 @@ def build_research_prompt(
     denoise_strength = common.get("baseline_denoise_strength", 0.12)
 
     for disease in disease_names:
-        disease_entry = diseases.get(disease)
+        try:
+            resolved_name = resolve_preset_disease_name(disease, diseases.keys()) if disease not in diseases else disease
+        except KeyError:
+            prompt_parts.append(disease)
+            continue
+        disease_entry = diseases.get(resolved_name)
         if disease_entry is None:
             prompt_parts.append(disease)
             continue

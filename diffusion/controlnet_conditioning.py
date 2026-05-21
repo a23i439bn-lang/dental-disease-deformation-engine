@@ -1,4 +1,7 @@
 from __future__ import annotations
+# このファイルの役割:
+# ControlNet に渡す条件テンソルを作るモジュールです。
+# ランドマークやフローなどの構造情報を条件画像へ変換します。
 
 from dataclasses import dataclass
 

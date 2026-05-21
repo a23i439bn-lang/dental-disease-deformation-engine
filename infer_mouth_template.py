@@ -1,4 +1,7 @@
 from __future__ import annotations
+# このファイルの役割:
+# 口 ROI ベースで歯科疾患の見た目を確認する主力スクリプトです。
+# `protrusion`、`openbite`、`spacing`、`caries` の挙動確認に使います。
 
 """口ROIベースで疾患テンプレを当てる現在の主力スクリプト。
 
@@ -10,6 +13,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import random
 from pathlib import Path
 
 os.environ.setdefault("MPLCONFIGDIR", str(Path(".mplconfig").resolve()))
@@ -17,6 +21,15 @@ os.environ.setdefault("MPLCONFIGDIR", str(Path(".mplconfig").resolve()))
 import cv2
 import mediapipe as mp
 import numpy as np
+import torch
+from PIL import Image
+
+try:
+    from diffusers import StableDiffusionImg2ImgPipeline
+    from diffusers import StableDiffusionInpaintPipeline
+except Exception:
+    StableDiffusionImg2ImgPipeline = None  # type: ignore[assignment]
+    StableDiffusionInpaintPipeline = None  # type: ignore[assignment]
 
 
 MOUTH_IDX = [
@@ -33,6 +46,46 @@ LOWER_INNER_IDX = [317, 402, 318, 324]
 LEFT_FRONT_IDX = [78, 95, 88]
 RIGHT_FRONT_IDX = [318, 324]
 DEFAULT_FACE_LANDMARKER_PATH = Path("models") / "face_landmarker.task"
+SUPPORTED_DISEASE_CHOICES = [
+    "protrusion",
+    "maxillary_protrusion",
+    "openbite",
+    "open_bite",
+    "spacing",
+    "diastema",
+    "caries",
+    "dental_caries",
+    "dental caries",
+]
+
+DEFAULT_SD_MODEL_ID = "runwayml/stable-diffusion-v1-5"
+DEFAULT_SD_PROMPT = (
+    "realistic teeth, natural dental appearance, clinical dental photo, "
+    "realistic oral cavity, high detail, preserve the same person, preserve mouth structure"
+)
+DEFAULT_SD_NEGATIVE_PROMPT = (
+    "extra teeth, blurry teeth, malformed mouth, deformed face, duplicate teeth, ugly, "
+    "cartoon, illustration, painting, cgi, 3d render, stylized, altered identity, different person"
+)
+
+
+def normalize_template_disease_name(name: str) -> str:
+    normalized = name.strip().lower().replace(" ", "_")
+    alias_map = {
+        "protrusion": "protrusion",
+        "maxillary_protrusion": "protrusion",
+        "openbite": "openbite",
+        "open_bite": "openbite",
+        "anterior_open_bite": "openbite",
+        "spacing": "spacing",
+        "diastema": "spacing",
+        "caries": "caries",
+        "dental_caries": "caries",
+    }
+    if normalized not in alias_map:
+        available = ", ".join(SUPPORTED_DISEASE_CHOICES)
+        raise KeyError(f"Unsupported disease template: {name}. Available: {available}")
+    return alias_map[normalized]
 
 
 def parse_args() -> argparse.Namespace:
@@ -41,7 +94,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--disease",
         required=True,
-        choices=["protrusion", "openbite", "spacing"],
+        choices=SUPPORTED_DISEASE_CHOICES,
         help="Template name",
     )
     parser.add_argument("--severity", type=float, default=0.5, help="Strength in [0, 1.5]")
@@ -57,6 +110,17 @@ def parse_args() -> argparse.Namespace:
         help="Path to MediaPipe Face Landmarker .task model",
     )
     parser.add_argument("--output-dir", default="outputs/mouth_template", help="Directory for saved outputs")
+    parser.add_argument("--enable-sd-refine", action="store_true", help="Run Stable Diffusion img2img on the warped mouth ROI")
+    parser.add_argument("--sd-model-id", default=DEFAULT_SD_MODEL_ID, help="Stable Diffusion model id or local directory")
+    parser.add_argument("--sd-device", default="auto", help="Diffusion device: auto/cuda/cpu")
+    parser.add_argument("--sd-steps", type=int, default=24, help="Img2img inference steps")
+    parser.add_argument("--sd-guidance-scale", type=float, default=4.5, help="Img2img guidance scale")
+    parser.add_argument("--sd-strength", type=float, default=0.2, help="Img2img denoise strength")
+    parser.add_argument("--sd-seed", type=int, default=1234, help="Img2img random seed")
+    parser.add_argument("--sd-prompt", default="", help="Optional full positive prompt override")
+    parser.add_argument("--sd-negative-prompt", default=DEFAULT_SD_NEGATIVE_PROMPT, help="Negative prompt for img2img")
+    parser.add_argument("--sd-local-edit", action="store_true", help="Use disease-local inpaint refinement instead of full ROI img2img")
+    parser.add_argument("--sd-render-main", action="store_true", help="Treat the geometric output as a condition image and let inpaint do the final rendering")
     return parser.parse_args()
 
 
@@ -237,6 +301,10 @@ def build_teeth_geometry(teeth_mask: np.ndarray) -> tuple[dict[str, np.ndarray],
             "right": zeros,
             "center": zeros,
             "upper_center": zeros,
+            "left_central": zeros,
+            "right_central": zeros,
+            "gap_core": zeros,
+            "front_pair": zeros,
         }, debug
 
     ys, xs = np.where(teeth_mask > 0)
@@ -248,6 +316,8 @@ def build_teeth_geometry(teeth_mask: np.ndarray) -> tuple[dict[str, np.ndarray],
     center_y = (y_min + y_max) * 0.5
     band_sigma_x = max(4.0, (x_max - x_min) * 0.16)
     band_sigma_y = max(3.0, (y_max - y_min) * 0.20)
+    central_sigma_x = max(3.0, (x_max - x_min) * 0.10)
+    upper_sigma_y = max(3.0, (y_max - y_min) * 0.16)
 
     grid_x, grid_y = np.meshgrid(np.arange(w, dtype=np.float32), np.arange(h, dtype=np.float32))
     full_mask = normalize_mask(teeth_mask, sigma=3.0)
@@ -256,8 +326,25 @@ def build_teeth_geometry(teeth_mask: np.ndarray) -> tuple[dict[str, np.ndarray],
     left_binary = np.where((grid_x < split_x) & (teeth_mask > 0), 255, 0).astype(np.uint8)
     right_binary = np.where((grid_x >= split_x) & (teeth_mask > 0), 255, 0).astype(np.uint8)
     center_band = np.exp(-((grid_x - center_x) ** 2) / (2.0 * band_sigma_x ** 2))
+    tight_center_band = np.exp(-((grid_x - center_x) ** 2) / (2.0 * central_sigma_x ** 2))
+    upper_focus = np.exp(-((grid_y - (center_y - band_sigma_y * 0.55)) ** 2) / (2.0 * upper_sigma_y ** 2))
     center_binary = np.where((center_band > 0.25) & (teeth_mask > 0), 255, 0).astype(np.uint8)
     upper_center_binary = np.where((center_band > 0.18) & (grid_y <= center_y) & (teeth_mask > 0), 255, 0).astype(np.uint8)
+    left_central_binary = np.where(
+        (tight_center_band > 0.30) & (upper_focus > 0.22) & (grid_x <= center_x) & (upper_binary > 0),
+        255,
+        0,
+    ).astype(np.uint8)
+    right_central_binary = np.where(
+        (tight_center_band > 0.30) & (upper_focus > 0.22) & (grid_x >= center_x) & (upper_binary > 0),
+        255,
+        0,
+    ).astype(np.uint8)
+    gap_core_binary = np.where(
+        (tight_center_band > 0.55) & (upper_focus > 0.18) & (teeth_mask > 0),
+        255,
+        0,
+    ).astype(np.uint8)
 
     masks["full"] = full_mask
     masks["upper"] = normalize_mask(upper_binary, sigma=3.0)
@@ -266,10 +353,14 @@ def build_teeth_geometry(teeth_mask: np.ndarray) -> tuple[dict[str, np.ndarray],
     masks["right"] = normalize_mask(right_binary, sigma=3.0)
     masks["center"] = normalize_mask(center_binary, sigma=3.0)
     masks["upper_center"] = normalize_mask(upper_center_binary, sigma=3.0)
+    masks["left_central"] = normalize_mask(left_central_binary, sigma=2.0)
+    masks["right_central"] = normalize_mask(right_central_binary, sigma=2.0)
+    masks["gap_core"] = normalize_mask(gap_core_binary, sigma=1.8)
+    masks["front_pair"] = np.clip(masks["left_central"] + masks["right_central"], 0.0, 1.0)
 
     debug[:, :, 1] = (masks["full"] * 255.0).astype(np.uint8)
-    debug[:, :, 0] = (masks["upper"] * 255.0).astype(np.uint8)
-    debug[:, :, 2] = (masks["center"] * 255.0).astype(np.uint8)
+    debug[:, :, 0] = np.clip((masks["left_central"] + masks["right_central"]) * 255.0, 0, 255).astype(np.uint8)
+    debug[:, :, 2] = np.clip(masks["gap_core"] * 255.0, 0, 255).astype(np.uint8)
     cv2.line(debug, (int(round(split_x)), y_min), (int(round(split_x)), y_max), (255, 255, 255), 1)
     cv2.line(debug, (x_min, int(round(split_y))), (x_max, int(round(split_y))), (255, 255, 255), 1)
     return masks, debug
@@ -300,6 +391,7 @@ def build_template_delta(
     teeth_mask: np.ndarray | None = None,
     teeth_geometry: dict[str, np.ndarray] | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
+    disease = normalize_template_disease_name(disease)
     h, w = roi_shape[:2]
     grid_x, grid_y = np.meshgrid(np.arange(w), np.arange(h))
     delta_x = np.zeros_like(grid_x, dtype=np.float32)
@@ -318,6 +410,10 @@ def build_template_delta(
     right_mask = geometry.get("right", focus_mask)
     center_mask = geometry.get("center", focus_mask)
     upper_center_mask = geometry.get("upper_center", upper_mask)
+    left_central_mask = geometry.get("left_central", upper_center_mask * left_mask)
+    right_central_mask = geometry.get("right_central", upper_center_mask * right_mask)
+    gap_core_mask = geometry.get("gap_core", center_mask * upper_center_mask)
+    front_pair_mask = geometry.get("front_pair", np.clip(left_central_mask + right_central_mask, 0.0, 1.0))
 
     if disease == "protrusion":
         center_x = w * 0.5
@@ -339,13 +435,28 @@ def build_template_delta(
         delta_y -= base_shift * 1.65 * gap_focus * upper_mask
         delta_y += base_shift * 1.65 * gap_focus * lower_mask
     elif disease == "spacing":
-        center_x = w * 0.5
-        split_focus = np.exp(-((grid_x - center_x) ** 2) / (2.0 * max(3.0, w * 0.045) ** 2))
-        vertical_focus = np.exp(-((grid_y - h * 0.48) ** 2) / (2.0 * max(4.0, h * 0.14) ** 2))
-        gap_focus = split_focus * vertical_focus * center_mask
-        delta_x -= base_shift * 2.20 * gap_focus * left_mask
-        delta_x += base_shift * 2.20 * gap_focus * right_mask
-        delta_y -= base_shift * 0.18 * gap_focus * upper_mask
+        crown_focus = np.exp(-((grid_y - h * 0.46) ** 2) / (2.0 * max(4.0, h * 0.11) ** 2))
+        root_focus = np.exp(-((grid_y - h * 0.58) ** 2) / (2.0 * max(4.0, h * 0.14) ** 2))
+        tooth_rigidity = 0.35 + 0.65 * crown_focus
+        gap_focus = gap_core_mask * crown_focus
+
+        # Treat the two front incisors like separate pieces: left tooth goes left, right tooth goes right.
+        delta_x -= base_shift * 4.25 * left_central_mask * tooth_rigidity
+        delta_x += base_shift * 4.25 * right_central_mask * tooth_rigidity
+
+        # Anchor the roots a little less than the crowns so the split reads like two teeth separating.
+        delta_x += base_shift * 0.42 * left_central_mask * root_focus
+        delta_x -= base_shift * 0.42 * right_central_mask * root_focus
+
+        # Slight crown lift keeps the contact from visually smearing into a broad arch stretch.
+        delta_y -= base_shift * 0.34 * front_pair_mask * crown_focus
+        delta_y += base_shift * 0.08 * front_pair_mask * root_focus
+
+        # Carve the midline more aggressively so SD has a clear gap to preserve.
+        delta_x -= base_shift * 1.35 * gap_focus * left_central_mask
+        delta_x += base_shift * 1.35 * gap_focus * right_central_mask
+    elif disease == "caries":
+        pass
     else:
         raise KeyError(f"Unsupported disease template: {disease}")
 
@@ -370,6 +481,150 @@ def warp_mouth(roi: np.ndarray, delta_x: np.ndarray, delta_y: np.ndarray) -> np.
     )
 
 
+def shift_mask_and_patch(
+    image: np.ndarray,
+    mask_soft: np.ndarray,
+    shift_x: int,
+    shift_y: int = 0,
+) -> tuple[np.ndarray, np.ndarray]:
+    h, w = mask_soft.shape
+    if shift_x == 0 and shift_y == 0:
+        return image.copy(), mask_soft.copy()
+
+    translation = np.float32([[1, 0, shift_x], [0, 1, shift_y]])
+    shifted_patch = cv2.warpAffine(
+        image,
+        translation,
+        (w, h),
+        flags=cv2.INTER_LINEAR,
+        borderMode=cv2.BORDER_REFLECT_101,
+    )
+    shifted_mask = cv2.warpAffine(
+        mask_soft.astype(np.float32),
+        translation,
+        (w, h),
+        flags=cv2.INTER_LINEAR,
+        borderMode=cv2.BORDER_CONSTANT,
+        borderValue=0,
+    )
+    return shifted_patch, np.clip(shifted_mask, 0.0, 1.0)
+
+
+def apply_spacing_front_teeth_translation(
+    roi: np.ndarray,
+    severity: float,
+    teeth_geometry: dict[str, np.ndarray] | None = None,
+) -> tuple[np.ndarray, np.ndarray]:
+    geometry = teeth_geometry or {}
+    left_central = np.clip(geometry.get("left_central", np.zeros(roi.shape[:2], dtype=np.float32)), 0.0, 1.0)
+    right_central = np.clip(geometry.get("right_central", np.zeros(roi.shape[:2], dtype=np.float32)), 0.0, 1.0)
+    gap_core = np.clip(geometry.get("gap_core", np.zeros(roi.shape[:2], dtype=np.float32)), 0.0, 1.0)
+    front_pair = np.clip(geometry.get("front_pair", left_central + right_central), 0.0, 1.0)
+    upper_center = np.clip(geometry.get("upper_center", front_pair), 0.0, 1.0)
+
+    if float(left_central.max()) < 1e-6 or float(right_central.max()) < 1e-6:
+        return roi.copy(), np.zeros(roi.shape[:2], dtype=np.uint8)
+
+    h, w = roi.shape[:2]
+    severity_scale = float(np.clip(severity, 0.0, 1.5) / 1.5)
+    shift_px = max(4, int(round((w * 0.018) + (w * 0.030 * severity_scale))))
+    lift_px = max(0, int(round(h * 0.012 * severity_scale)))
+
+    left_patch, left_shifted_mask = shift_mask_and_patch(roi, left_central, -shift_px, -lift_px)
+    right_patch, right_shifted_mask = shift_mask_and_patch(roi, right_central, shift_px, -lift_px)
+
+    # Remove the original two incisors from the base so they can be re-placed as separate pieces.
+    front_removal = np.clip(front_pair * (0.68 + 0.32 * upper_center), 0.0, 1.0)
+    front_removal = cv2.GaussianBlur(front_removal.astype(np.float32), (0, 0), sigmaX=2.2, sigmaY=2.2)
+    gap_seed = cv2.GaussianBlur(np.clip(gap_core * (0.65 + 0.35 * upper_center), 0.0, 1.0), (0, 0), sigmaX=2.0, sigmaY=2.0)
+
+    hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+    lab = cv2.cvtColor(roi, cv2.COLOR_BGR2LAB)
+    mouth_shadow = (
+        0.50 * hsv[:, :, 2].astype(np.float32)
+        + 0.30 * hsv[:, :, 1].astype(np.float32)
+        + 0.20 * lab[:, :, 1].astype(np.float32)
+    )
+    mouth_shadow = cv2.GaussianBlur(mouth_shadow, (0, 0), sigmaX=4.0, sigmaY=4.0)
+    mouth_shadow = cv2.normalize(mouth_shadow, None, 0.0, 1.0, cv2.NORM_MINMAX)
+
+    dark_fill = roi.astype(np.float32).copy()
+    dark_fill[:, :, 0] *= 0.48 + 0.10 * (1.0 - mouth_shadow)
+    dark_fill[:, :, 1] *= 0.40 + 0.08 * (1.0 - mouth_shadow)
+    dark_fill[:, :, 2] *= 0.34 + 0.06 * (1.0 - mouth_shadow)
+
+    base = roi.astype(np.float32) * (1.0 - front_removal[:, :, None]) + dark_fill * front_removal[:, :, None]
+
+    # Put the separated incisors back on top.
+    base = base * (1.0 - left_shifted_mask[:, :, None]) + left_patch.astype(np.float32) * left_shifted_mask[:, :, None]
+    base = base * (1.0 - right_shifted_mask[:, :, None]) + right_patch.astype(np.float32) * right_shifted_mask[:, :, None]
+
+    # Explicit midline gap cue that survives the later diffusion refinement.
+    gap_mask = cv2.GaussianBlur(
+        np.clip(gap_seed + front_removal * 0.22, 0.0, 1.0).astype(np.float32),
+        (0, 0),
+        sigmaX=1.8,
+        sigmaY=1.8,
+    )
+    gap_mask = np.clip(gap_mask * (0.55 + 0.45 * severity_scale), 0.0, 1.0)
+    base[:, :, 0] *= 1.0 - 0.34 * gap_mask
+    base[:, :, 1] *= 1.0 - 0.42 * gap_mask
+    base[:, :, 2] *= 1.0 - 0.52 * gap_mask
+
+    return np.clip(base, 0, 255).astype(np.uint8), np.clip(gap_mask * 255.0, 0, 255).astype(np.uint8)
+
+
+def apply_disease_texture(
+    roi: np.ndarray,
+    disease: str,
+    severity: float,
+    teeth_mask: np.ndarray | None = None,
+    teeth_geometry: dict[str, np.ndarray] | None = None,
+) -> tuple[np.ndarray, np.ndarray]:
+    disease = normalize_template_disease_name(disease)
+    if disease == "spacing":
+        if teeth_mask is None or cv2.countNonZero(teeth_mask) == 0:
+            return roi.copy(), np.zeros(roi.shape[:2], dtype=np.uint8)
+        return apply_spacing_front_teeth_translation(roi, severity, teeth_geometry=teeth_geometry)
+
+    if disease != "caries":
+        return roi.copy(), np.zeros(roi.shape[:2], dtype=np.uint8)
+
+    if teeth_mask is None or cv2.countNonZero(teeth_mask) == 0:
+        return roi.copy(), np.zeros(roi.shape[:2], dtype=np.uint8)
+
+    h, w = roi.shape[:2]
+    geometry = teeth_geometry or {}
+    center_mask = geometry.get("center", teeth_mask.astype(np.float32) / 255.0)
+    upper_mask = geometry.get("upper", teeth_mask.astype(np.float32) / 255.0)
+    base_mask = cv2.GaussianBlur(teeth_mask.astype(np.float32) / 255.0, (0, 0), sigmaX=3.2, sigmaY=3.2)
+    severity_scale = float(np.clip(severity, 0.0, 1.5) / 1.5)
+
+    rng = np.random.default_rng(7)
+    coarse_noise = rng.random((h, w), dtype=np.float32)
+    coarse_noise = cv2.GaussianBlur(coarse_noise, (0, 0), sigmaX=max(3.0, w * 0.08), sigmaY=max(3.0, h * 0.08))
+    coarse_noise = cv2.normalize(coarse_noise, None, 0.0, 1.0, cv2.NORM_MINMAX)
+
+    edge_noise = rng.random((h, w), dtype=np.float32)
+    edge_noise = cv2.GaussianBlur(edge_noise, (0, 0), sigmaX=max(1.8, w * 0.03), sigmaY=max(1.8, h * 0.03))
+    edge_noise = cv2.normalize(edge_noise, None, 0.0, 1.0, cv2.NORM_MINMAX)
+
+    center_bias = cv2.GaussianBlur((0.65 * center_mask + 0.35 * upper_mask).astype(np.float32), (0, 0), sigmaX=4.0, sigmaY=4.0)
+    stain_strength = np.clip((0.35 + 0.65 * coarse_noise) * (0.55 + 0.45 * center_bias) * base_mask * severity_scale, 0.0, 1.0)
+    cavity_mask = ((edge_noise > (0.74 - 0.18 * severity_scale)) & (base_mask > 0.18)).astype(np.float32)
+    cavity_mask = cv2.GaussianBlur(cavity_mask, (0, 0), sigmaX=1.6, sigmaY=1.6)
+    cavity_mask = np.clip(cavity_mask * base_mask, 0.0, 1.0)
+
+    output = roi.astype(np.float32).copy()
+    output[:, :, 0] *= 1.0 - 0.42 * stain_strength - 0.22 * cavity_mask
+    output[:, :, 1] *= 1.0 - 0.28 * stain_strength - 0.16 * cavity_mask
+    output[:, :, 2] = output[:, :, 2] * (1.0 - 0.06 * stain_strength) + 26.0 * stain_strength
+    output *= 1.0 - 0.18 * cavity_mask[:, :, None]
+
+    texture_mask = np.clip(np.maximum(stain_strength, cavity_mask) * 255.0, 0, 255).astype(np.uint8)
+    return np.clip(output, 0, 255).astype(np.uint8), texture_mask
+
+
 def build_blend_mask(roi_shape: tuple[int, ...], teeth_mask: np.ndarray | None = None) -> np.ndarray:
     h, w = roi_shape[:2]
     if teeth_mask is not None and cv2.countNonZero(teeth_mask) > 0:
@@ -385,6 +640,280 @@ def build_blend_mask(roi_shape: tuple[int, ...], teeth_mask: np.ndarray | None =
     if blur % 2 == 0:
         blur += 1
     return cv2.GaussianBlur(mask, (blur, blur), 0)
+
+
+def build_disease_edit_mask(
+    roi_shape: tuple[int, ...],
+    disease: str,
+    severity: float,
+    teeth_geometry: dict[str, np.ndarray] | None = None,
+    texture_mask: np.ndarray | None = None,
+) -> np.ndarray:
+    h, w = roi_shape[:2]
+    geometry = teeth_geometry or {}
+    zeros = np.zeros((h, w), dtype=np.float32)
+    severity_scale = float(np.clip(severity, 0.0, 1.5) / 1.5)
+
+    if disease == "spacing":
+        gap_core = geometry.get("gap_core", zeros)
+        left_central = geometry.get("left_central", zeros)
+        right_central = geometry.get("right_central", zeros)
+        upper_center = geometry.get("upper_center", zeros)
+        mask = np.clip(gap_core * 1.35 + (left_central + right_central) * 0.32 + upper_center * 0.18, 0.0, 1.0)
+        mask = cv2.GaussianBlur(mask.astype(np.float32), (0, 0), sigmaX=2.8, sigmaY=2.8)
+    elif disease == "openbite":
+        center = geometry.get("center", zeros)
+        upper = geometry.get("upper", zeros)
+        lower = geometry.get("lower", zeros)
+        mask = np.clip(center * 0.85 + upper * 0.24 + lower * 0.24, 0.0, 1.0)
+        mask = cv2.GaussianBlur(mask.astype(np.float32), (0, 0), sigmaX=3.5, sigmaY=3.5)
+    elif disease == "protrusion":
+        upper_center = geometry.get("upper_center", zeros)
+        center = geometry.get("center", zeros)
+        mask = np.clip(upper_center * 0.95 + center * 0.20, 0.0, 1.0)
+        mask = cv2.GaussianBlur(mask.astype(np.float32), (0, 0), sigmaX=3.2, sigmaY=3.2)
+    elif disease == "caries":
+        if texture_mask is None:
+            return np.zeros((h, w), dtype=np.uint8)
+        mask = cv2.GaussianBlur((texture_mask.astype(np.float32) / 255.0), (0, 0), sigmaX=2.4, sigmaY=2.4)
+    else:
+        mask = zeros
+
+    threshold = 0.10 + (0.06 * (1.0 - min(1.0, severity_scale)))
+    binary = (mask > threshold).astype(np.uint8) * 255
+    if cv2.countNonZero(binary) > 0:
+        binary = cv2.dilate(binary, np.ones((3, 3), np.uint8), iterations=1)
+        binary = cv2.GaussianBlur(binary, (0, 0), sigmaX=1.6, sigmaY=1.6)
+        binary = np.where(binary > 16, 255, 0).astype(np.uint8)
+    return binary
+
+
+def build_renderer_condition_roi(
+    original_roi: np.ndarray,
+    geometric_roi: np.ndarray,
+    disease_mask: np.ndarray,
+) -> np.ndarray:
+    if cv2.countNonZero(disease_mask) == 0:
+        return geometric_roi.copy()
+    local_mask = cv2.GaussianBlur((disease_mask.astype(np.float32) / 255.0), (0, 0), sigmaX=2.6, sigmaY=2.6)
+    local_mask_3 = np.repeat(np.clip(local_mask, 0.0, 1.0)[:, :, None], 3, axis=2)
+    blended = original_roi.astype(np.float32) * (1.0 - local_mask_3) + geometric_roi.astype(np.float32) * local_mask_3
+    return np.clip(blended, 0, 255).astype(np.uint8)
+
+
+def severity_to_prompt_bucket(severity: float) -> str:
+    if severity < 0.35:
+        return "mild"
+    if severity < 0.8:
+        return "moderate"
+    return "severe"
+
+
+def build_sd_prompt(disease: str, severity: float, prompt_override: str) -> str:
+    if prompt_override.strip():
+        return prompt_override.strip()
+
+    disease_prompts = {
+        "spacing": "diastema between upper incisors, realistic tooth spacing",
+        "protrusion": "maxillary protrusion, orthodontic deformation, forward upper incisors",
+        "openbite": "anterior open bite, visible gap between upper and lower front teeth",
+        "caries": "dental caries, tooth decay, dark enamel lesion, realistic decayed tooth texture",
+    }
+    bucket = severity_to_prompt_bucket(severity)
+    bucket_text = {
+        "mild": "subtle medically plausible change",
+        "moderate": "clear medically plausible change",
+        "severe": "pronounced but realistic medically plausible change",
+    }[bucket]
+    disease_text = disease_prompts.get(disease, "realistic dental condition")
+    return f"{DEFAULT_SD_PROMPT}, {disease_text}, {bucket_text}"
+
+
+def resolve_sd_device_and_dtype(requested_device: str) -> tuple[str, torch.dtype]:
+    requested = requested_device.strip().lower()
+    if requested == "auto":
+        if torch.cuda.is_available():
+            return "cuda", torch.float16
+        return "cpu", torch.float32
+    if requested == "cuda":
+        if not torch.cuda.is_available():
+            raise RuntimeError("CUDA was requested for Stable Diffusion refinement, but no CUDA device is available.")
+        return "cuda", torch.float16
+    return "cpu", torch.float32
+
+
+def pil_from_bgr(image: np.ndarray) -> Image.Image:
+    return Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+
+
+def bgr_from_pil(image: Image.Image) -> np.ndarray:
+    return cv2.cvtColor(np.array(image.convert("RGB")), cv2.COLOR_RGB2BGR)
+
+
+def set_sd_seed(seed: int) -> None:
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
+
+def load_sd_img2img_pipeline(model_id: str, device: str, dtype: torch.dtype) -> StableDiffusionImg2ImgPipeline:
+    if StableDiffusionImg2ImgPipeline is None:
+        raise RuntimeError("diffusers is not available, so Stable Diffusion img2img refinement cannot run.")
+    try:
+        pipe = StableDiffusionImg2ImgPipeline.from_pretrained(
+            model_id,
+            torch_dtype=dtype,
+            safety_checker=None,
+            local_files_only=True,
+        )
+    except Exception as exc:
+        raise RuntimeError(
+            f"Could not load Stable Diffusion model '{model_id}' from the local cache. "
+            "Download the model first or point --sd-model-id to a local directory."
+        ) from exc
+
+    pipe.set_progress_bar_config(disable=True)
+    pipe.enable_attention_slicing()
+    if device == "cuda":
+        try:
+            pipe.enable_xformers_memory_efficient_attention()
+        except Exception:
+            pass
+    pipe.to(device)
+    return pipe
+
+
+def load_sd_inpaint_pipeline(model_id: str, device: str, dtype: torch.dtype) -> StableDiffusionInpaintPipeline:
+    if StableDiffusionInpaintPipeline is None:
+        raise RuntimeError("diffusers inpaint pipeline is not available, so local edit refinement cannot run.")
+    try:
+        pipe = StableDiffusionInpaintPipeline.from_pretrained(
+            model_id,
+            torch_dtype=dtype,
+            safety_checker=None,
+            local_files_only=True,
+        )
+    except Exception as exc:
+        raise RuntimeError(
+            f"Could not load Stable Diffusion inpaint model '{model_id}' from the local cache. "
+            "Download the model first or point --sd-model-id to a local directory."
+        ) from exc
+
+    pipe.set_progress_bar_config(disable=True)
+    pipe.enable_attention_slicing()
+    if device == "cuda":
+        try:
+            pipe.enable_xformers_memory_efficient_attention()
+        except Exception:
+            pass
+    pipe.to(device)
+    return pipe
+
+
+def refine_roi_with_sd(
+    warped_roi: np.ndarray,
+    disease: str,
+    severity: float,
+    teeth_mask: np.ndarray | None,
+    args: argparse.Namespace,
+) -> tuple[np.ndarray, dict[str, object]]:
+    device, dtype = resolve_sd_device_and_dtype(args.sd_device)
+    set_sd_seed(args.sd_seed)
+    pipe = load_sd_img2img_pipeline(args.sd_model_id, device, dtype)
+    prompt = build_sd_prompt(disease, severity, args.sd_prompt)
+    negative_prompt = args.sd_negative_prompt.strip()
+    init_image = pil_from_bgr(warped_roi)
+    generator = torch.Generator(device=device).manual_seed(int(args.sd_seed))
+
+    with torch.inference_mode():
+        output = pipe(
+            prompt=prompt,
+            negative_prompt=negative_prompt,
+            image=init_image,
+            strength=float(np.clip(args.sd_strength, 0.0, 1.0)),
+            guidance_scale=float(args.sd_guidance_scale),
+            num_inference_steps=int(args.sd_steps),
+            generator=generator,
+        )
+    refined_roi = bgr_from_pil(output.images[0])
+    if refined_roi.shape[:2] != warped_roi.shape[:2]:
+        refined_roi = cv2.resize(refined_roi, (warped_roi.shape[1], warped_roi.shape[0]), interpolation=cv2.INTER_CUBIC)
+
+    preserve_mask = build_blend_mask(warped_roi.shape, teeth_mask=teeth_mask)
+    preserve_mask_3 = np.repeat(preserve_mask[:, :, None], 3, axis=2)
+    blended_refined = refined_roi.astype(np.float32) * preserve_mask_3 + warped_roi.astype(np.float32) * (1.0 - preserve_mask_3)
+    blended_refined = np.clip(blended_refined, 0, 255).astype(np.uint8)
+    meta = {
+        "enabled": True,
+        "model_id": args.sd_model_id,
+        "device": device,
+        "steps": int(args.sd_steps),
+        "guidance_scale": float(args.sd_guidance_scale),
+        "strength": float(np.clip(args.sd_strength, 0.0, 1.0)),
+        "seed": int(args.sd_seed),
+        "prompt": prompt,
+        "negative_prompt": negative_prompt,
+    }
+    return blended_refined, meta
+
+
+def refine_roi_with_sd_local_edit(
+    init_roi: np.ndarray,
+    disease_mask: np.ndarray,
+    disease: str,
+    severity: float,
+    teeth_mask: np.ndarray | None,
+    args: argparse.Namespace,
+) -> tuple[np.ndarray, dict[str, object]]:
+    if cv2.countNonZero(disease_mask) == 0:
+        return init_roi.copy(), {"enabled": False, "reason": "empty_disease_mask", "mode": "local_edit"}
+
+    device, dtype = resolve_sd_device_and_dtype(args.sd_device)
+    set_sd_seed(args.sd_seed)
+    pipe = load_sd_inpaint_pipeline(args.sd_model_id, device, dtype)
+    prompt = build_sd_prompt(disease, severity, args.sd_prompt)
+    negative_prompt = args.sd_negative_prompt.strip()
+    init_image = pil_from_bgr(init_roi)
+    mask_image = Image.fromarray(disease_mask).convert("L")
+    generator = torch.Generator(device=device).manual_seed(int(args.sd_seed))
+
+    with torch.inference_mode():
+        output = pipe(
+            prompt=prompt,
+            negative_prompt=negative_prompt,
+            image=init_image,
+            mask_image=mask_image,
+            strength=float(np.clip(args.sd_strength, 0.0, 1.0)),
+            guidance_scale=float(args.sd_guidance_scale),
+            num_inference_steps=int(args.sd_steps),
+            generator=generator,
+        )
+    refined_roi = bgr_from_pil(output.images[0])
+    if refined_roi.shape[:2] != init_roi.shape[:2]:
+        refined_roi = cv2.resize(refined_roi, (init_roi.shape[1], init_roi.shape[0]), interpolation=cv2.INTER_CUBIC)
+
+    local_mask = cv2.GaussianBlur((disease_mask.astype(np.float32) / 255.0), (0, 0), sigmaX=2.2, sigmaY=2.2)
+    if teeth_mask is not None and cv2.countNonZero(teeth_mask) > 0:
+        local_mask = np.clip(local_mask * (0.55 + 0.45 * build_blend_mask(init_roi.shape, teeth_mask=teeth_mask)), 0.0, 1.0)
+    local_mask_3 = np.repeat(local_mask[:, :, None], 3, axis=2)
+    blended_refined = refined_roi.astype(np.float32) * local_mask_3 + init_roi.astype(np.float32) * (1.0 - local_mask_3)
+    blended_refined = np.clip(blended_refined, 0, 255).astype(np.uint8)
+    meta = {
+        "enabled": True,
+        "mode": "local_edit",
+        "model_id": args.sd_model_id,
+        "device": device,
+        "steps": int(args.sd_steps),
+        "guidance_scale": float(args.sd_guidance_scale),
+        "strength": float(np.clip(args.sd_strength, 0.0, 1.0)),
+        "seed": int(args.sd_seed),
+        "prompt": prompt,
+        "negative_prompt": negative_prompt,
+        "mask_pixels": int(cv2.countNonZero(disease_mask)),
+    }
+    return blended_refined, meta
 
 
 def blend_back(
@@ -422,12 +951,16 @@ def save_outputs(
     output_dir: Path,
     mouth_roi: np.ndarray,
     warped_roi: np.ndarray,
+    condition_roi: np.ndarray | None,
+    refined_roi: np.ndarray | None,
     final_output: np.ndarray,
     landmarks_debug: np.ndarray,
     blend_mask: np.ndarray,
     teeth_mask: np.ndarray,
     teeth_debug: np.ndarray,
     geometry_debug: np.ndarray,
+    texture_mask: np.ndarray,
+    disease_edit_mask: np.ndarray | None,
     delta_x: np.ndarray,
     delta_y: np.ndarray,
     summary: dict[str, object],
@@ -435,12 +968,19 @@ def save_outputs(
     output_dir.mkdir(parents=True, exist_ok=True)
     cv2.imwrite(str(output_dir / "mouth_roi.png"), mouth_roi)
     cv2.imwrite(str(output_dir / "warped_roi.png"), warped_roi)
+    if condition_roi is not None:
+        cv2.imwrite(str(output_dir / "condition_roi.png"), condition_roi)
+    if refined_roi is not None:
+        cv2.imwrite(str(output_dir / "refined_roi.png"), refined_roi)
     cv2.imwrite(str(output_dir / "final_output.png"), final_output)
     cv2.imwrite(str(output_dir / "landmarks_debug.png"), landmarks_debug)
     cv2.imwrite(str(output_dir / "blend_mask.png"), blend_mask)
     cv2.imwrite(str(output_dir / "teeth_mask.png"), teeth_mask)
     cv2.imwrite(str(output_dir / "teeth_debug.png"), teeth_debug)
     cv2.imwrite(str(output_dir / "geometry_debug.png"), geometry_debug)
+    cv2.imwrite(str(output_dir / "texture_mask.png"), texture_mask)
+    if disease_edit_mask is not None:
+        cv2.imwrite(str(output_dir / "disease_edit_mask.png"), disease_edit_mask)
 
     delta_vis = np.zeros((delta_x.shape[0], delta_x.shape[1], 3), dtype=np.uint8)
     mag = np.sqrt(delta_x ** 2 + delta_y ** 2)
@@ -480,25 +1020,68 @@ def run_single_case(image: np.ndarray, args: argparse.Namespace, severity_value:
     if image is None:
         raise FileNotFoundError(f"Could not read input image: {args.input}")
 
+    disease_name = normalize_template_disease_name(args.disease)
     landmarks, detector_mode = detect_landmarks(image, args.face_landmarker_model)
     mouth_roi, bbox = extract_mouth_roi(image, landmarks, margin=args.margin)
     teeth_mask, teeth_debug = build_teeth_mask(mouth_roi, landmarks, bbox)
     teeth_geometry, geometry_debug = build_teeth_geometry(teeth_mask)
     delta_x, delta_y = build_template_delta(
         mouth_roi.shape,
-        args.disease,
+        disease_name,
         severity_value,
         teeth_mask=teeth_mask,
         teeth_geometry=teeth_geometry,
     )
     warped_roi = warp_mouth(mouth_roi, delta_x, delta_y)
-    final_output, blend_mask = blend_back(image, warped_roi, bbox, teeth_mask=teeth_mask)
+    warped_roi, texture_mask = apply_disease_texture(
+        warped_roi,
+        disease_name,
+        severity_value,
+        teeth_mask=teeth_mask,
+        teeth_geometry=teeth_geometry,
+    )
+    disease_edit_mask = build_disease_edit_mask(
+        warped_roi.shape,
+        disease_name,
+        severity_value,
+        teeth_geometry=teeth_geometry,
+        texture_mask=texture_mask,
+    )
+    condition_roi: np.ndarray | None = None
+    refined_roi: np.ndarray | None = None
+    sd_meta: dict[str, object] = {"enabled": False}
+    roi_for_blend = warped_roi
+    if args.enable_sd_refine:
+        if args.sd_local_edit:
+            init_roi = warped_roi
+            if args.sd_render_main:
+                condition_roi = build_renderer_condition_roi(mouth_roi, warped_roi, disease_edit_mask)
+                init_roi = condition_roi
+            refined_roi, sd_meta = refine_roi_with_sd_local_edit(
+                init_roi=init_roi,
+                disease_mask=disease_edit_mask,
+                disease=disease_name,
+                severity=severity_value,
+                teeth_mask=teeth_mask,
+                args=args,
+            )
+        else:
+            refined_roi, sd_meta = refine_roi_with_sd(
+                warped_roi=warped_roi,
+                disease=disease_name,
+                severity=severity_value,
+                teeth_mask=teeth_mask,
+                args=args,
+            )
+        roi_for_blend = refined_roi
+
+    final_output, blend_mask = blend_back(image, roi_for_blend, bbox, teeth_mask=teeth_mask)
     landmarks_debug = draw_landmarks_debug(image, landmarks, bbox)
 
     summary = {
         "input": str(Path(args.input).resolve()),
         "detector_mode": detector_mode,
-        "disease": args.disease,
+        "disease": disease_name,
         "severity": severity_value,
         "bbox": {
             "x_min": bbox[0],
@@ -511,18 +1094,26 @@ def run_single_case(image: np.ndarray, args: argparse.Namespace, severity_value:
         "geometry_masks": sorted(list(teeth_geometry.keys())),
         "delta_abs_mean": float(np.mean(np.abs(delta_x)) + np.mean(np.abs(delta_y))),
         "delta_abs_max": float(max(np.max(np.abs(delta_x)), np.max(np.abs(delta_y)))),
+        "texture_pixels": int(cv2.countNonZero(texture_mask)),
+        "disease_edit_pixels": int(cv2.countNonZero(disease_edit_mask)),
+        "sd_refine": sd_meta,
+        "renderer_condition_enabled": bool(args.enable_sd_refine and args.sd_local_edit and args.sd_render_main),
     }
 
     save_outputs(
         output_dir=output_dir,
         mouth_roi=mouth_roi,
         warped_roi=warped_roi,
+        condition_roi=condition_roi,
+        refined_roi=refined_roi,
         final_output=final_output,
         landmarks_debug=landmarks_debug,
         blend_mask=blend_mask,
         teeth_mask=teeth_mask,
         teeth_debug=teeth_debug,
         geometry_debug=geometry_debug,
+        texture_mask=texture_mask,
+        disease_edit_mask=disease_edit_mask,
         delta_x=delta_x,
         delta_y=delta_y,
         summary=summary,

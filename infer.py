@@ -1,4 +1,8 @@
 from __future__ import annotations
+# このファイルの役割:
+# 学習済みモデルを使って最小構成の推論を行うスクリプトです。
+# Stable Diffusion ベースの推論パイプラインを読み込み、
+# prompt や追加 U-Net を使って `rendered.png` を出力します。
 
 """学習済みの disease-aware パイプライン全体を推論する入口。
 

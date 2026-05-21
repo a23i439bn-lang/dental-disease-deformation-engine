@@ -1,4 +1,7 @@
 from __future__ import annotations
+# このファイルの役割:
+# 学習用・推論用データセットを組み立てるモジュールです。
+# 画像、ランドマーク、疾患ラベル、severity などをまとめて扱います。
 
 """入力画像と疾患ラベルから学習用サンプルを組み立てるコード。
 
@@ -20,6 +23,8 @@ import torch
 from PIL import Image
 from torch.utils.data import Dataset
 
+from utils.disease_priors import canonicalize_disease_name, resolve_preset_disease_name
+
 
 MOUTH_INDICES = [
     61, 185, 40, 39, 37, 0, 267, 269, 270, 409,
@@ -34,9 +39,9 @@ INNER_MOUTH_INDICES = [78, 95, 88, 178, 87, 14, 317, 402, 318, 324, 308, 415, 31
 @dataclass
 class DatasetBuilderConfig:
     data_root: str = "data"
-    input_dir: str = "data/inputs"
+    input_dir: str = "data/inputs_normal"
     references_dir: str = "data/references"
-    manifest_path: str = "data/research_manifest.json"
+    manifest_path: str = "data/manifests/research_manifest.json"
     image_size: int = 256
     diseases: tuple[str, ...] = ("虫歯", "出っ歯", "すきっ歯")
     samples_per_image: int = 2
@@ -116,22 +121,28 @@ def normalize_landmarks(landmarks: np.ndarray) -> np.ndarray:
 
 def build_multi_hot(disease_names: list[str], known_diseases: list[str]) -> np.ndarray:
     multi_hot = np.zeros(len(known_diseases), dtype=np.float32)
+    canonical_to_index = {
+        canonicalize_disease_name(disease): index
+        for index, disease in enumerate(known_diseases)
+    }
     for disease in disease_names:
-        if disease in known_diseases:
-            multi_hot[known_diseases.index(disease)] = 1.0
+        index = canonical_to_index.get(canonicalize_disease_name(disease))
+        if index is not None:
+            multi_hot[index] = 1.0
     return multi_hot
 
 
 def synthesize_target_image(image: Image.Image, disease_names: list[str], severity: float) -> Image.Image:
     rgb = np.array(image).astype(np.float32)
     output = rgb.copy()
-    if "虫歯" in disease_names:
+    canonical_diseases = {canonicalize_disease_name(name) for name in disease_names}
+    if "caries" in canonical_diseases:
         output[:, :, 0] *= 1.0 - 0.12 * severity
         output[:, :, 1] *= 1.0 - 0.06 * severity
         output[:, :, 2] *= 1.0 - 0.02 * severity
-    if "出っ歯" in disease_names:
+    if "maxillary_protrusion" in canonical_diseases:
         output = np.roll(output, shift=max(1, int(3 * severity)), axis=1)
-    if "すきっ歯" in disease_names:
+    if "diastema" in canonical_diseases:
         center = output.shape[1] // 2
         gap = max(1, int(4 * severity))
         output[:, center - gap:center + gap] = 255.0
@@ -141,13 +152,27 @@ def synthesize_target_image(image: Image.Image, disease_names: list[str], severi
 def build_manifest(config: DatasetBuilderConfig) -> dict[str, Any]:
     input_dir = Path(config.input_dir)
     references_dir = Path(config.references_dir)
+    manifest_path = Path(config.manifest_path)
     records: list[dict[str, Any]] = []
+    legacy_input_dir = Path("data/inputs")
+    if input_dir != legacy_input_dir and (
+        not input_dir.exists()
+        or not any(path.suffix.lower() in {".jpg", ".jpeg", ".png"} for path in input_dir.iterdir())
+    ):
+        if legacy_input_dir.exists() and any(path.suffix.lower() in {".jpg", ".jpeg", ".png"} for path in legacy_input_dir.iterdir()):
+            print(
+                f"[dataset_builder] '{input_dir}' is empty or missing. Falling back to legacy input dir '{legacy_input_dir}'."
+            )
+            input_dir = legacy_input_dir
     image_paths = sorted([path for path in input_dir.iterdir() if path.suffix.lower() in {".jpg", ".jpeg", ".png"}])
     rng = random.Random(42)
     for image_path in image_paths:
         for _ in range(config.samples_per_image):
             disease_count = rng.randint(1, min(2, len(config.diseases)))
-            diseases = rng.sample(list(config.diseases), k=disease_count)
+            diseases = [
+                resolve_preset_disease_name(name, config.diseases)
+                for name in rng.sample(list(config.diseases), k=disease_count)
+            ]
             severity = round(rng.uniform(0.2, 1.0), 3)
             record = {
                 "image_path": str(image_path.resolve()),
@@ -163,7 +188,8 @@ def build_manifest(config: DatasetBuilderConfig) -> dict[str, Any]:
             }
             records.append(record)
     manifest = {"records": records, "diseases": list(config.diseases)}
-    Path(config.manifest_path).write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
     return manifest
 
 

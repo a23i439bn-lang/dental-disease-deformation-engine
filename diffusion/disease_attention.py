@@ -1,4 +1,7 @@
 from __future__ import annotations
+# このファイルの役割:
+# 疾患埋め込みを cross-attention 側へ渡すための補助モジュールです。
+# 疾患名や severity の情報を Diffusion 側で扱えるようにします。
 
 from dataclasses import dataclass
 

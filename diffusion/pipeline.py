@@ -1,4 +1,7 @@
 from __future__ import annotations
+# このファイルの役割:
+# 幾何変形・テクスチャ補助・Diffusion をつなぐ中核パイプラインです。
+# `DenseWarpLayer`、`TextureBranch`、Diffusion renderer をまとめています。
 
 """変形・テクスチャ・描画を束ねる中核パイプライン。
 

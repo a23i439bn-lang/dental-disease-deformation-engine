@@ -1,4 +1,7 @@
 from __future__ import annotations
+# このファイルの役割:
+# 口元の幾何変形だけを学習するフェーズ1用スクリプトです。
+# Diffusion を使わず、teacher target landmark を使って変形量を学習します。
 
 """変形専用ネットワークを学習するスクリプト。
 
@@ -32,8 +35,8 @@ from utils.disease_priors import ANCHOR_INDICES, MOUTH_INDICES, build_teacher_ta
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Phase-1 deformation training without diffusion.")
-    parser.add_argument("--manifest-path", default="data/research_manifest_geometry.json")
-    parser.add_argument("--train-data-dir", default="data/inputs")
+    parser.add_argument("--manifest-path", default="data/manifests/research_manifest_geometry.json")
+    parser.add_argument("--train-data-dir", default="data/inputs_normal")
     parser.add_argument("--references-dir", default="data/references")
     parser.add_argument("--image-size", type=int, default=256)
     parser.add_argument("--samples-per-image", type=int, default=2)
@@ -80,7 +83,7 @@ def ensure_manifest(args: argparse.Namespace) -> Path:
         return manifest_path
     if not args.auto_build_manifest:
         raise FileNotFoundError(
-            f"Manifest not found: {manifest_path}. Re-run with --auto-build-manifest to create one from inputs/references."
+            f"Manifest not found: {manifest_path}. Re-run with --auto-build-manifest to create one from inputs_normal/references."
         )
     config = DatasetBuilderConfig(
         input_dir=args.train_data_dir,

@@ -1,4 +1,8 @@
-'''This module provides functions to visualize the delta of facial landmarks on an image. It includes two main functions: `visualize_delta` for drawing arrows representing the delta, and `visualize_landmark_overlay` for overlaying the original and target landmarks on the image. Both functions save the resulting visualization to a specified path.'''
+"""ランドマーク変形量を画像として見やすく確認する補助モジュール。
+
+`visualize_delta` は矢印で変形方向を描き、
+`visualize_landmark_overlay` は元ランドマークと変形後ランドマークを重ねて表示します。
+"""
 from __future__ import annotations
 
 from pathlib import Path
