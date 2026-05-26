@@ -1,11 +1,11 @@
 .venv/
 __pycache__/
-outputs/
+#outputs/
 *.pth
 *.pt
 *.ckpt
 *.log
-*.png
-*.jpg
-*.jpeg
+#*.png
+#*.jpg
+#*.jpeg
 *.zip

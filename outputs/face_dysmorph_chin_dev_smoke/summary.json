@@ -1,0 +1,13 @@
+{
+  "input": "C:\\Users\\LIU\\Downloads\\卒業研究1 - コピー\\data\\inputs\\face.png",
+  "detector_mode": "mediapipe_tasks_face_landmarker",
+  "disease": "chin_deviation_left",
+  "severity": 0.7,
+  "warp_sigma": 52.0,
+  "feather": 21,
+  "control_points": 65,
+  "mask_pixels": 491316,
+  "delta_abs_mean": 1.055709719657898,
+  "delta_abs_max": 71.966552734375,
+  "output_image": "C:\\Users\\LIU\\Downloads\\卒業研究1 - コピー\\face_dysmorph_chin_dev_smoke\\final_output.png"
+}

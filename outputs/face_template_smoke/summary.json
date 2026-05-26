@@ -1,0 +1,14 @@
+{
+  "input": "C:\\Users\\LIU\\Downloads\\卒業研究1\\data\\inputs\\face.png",
+  "detector_mode": "mediapipe_tasks_face_landmarker",
+  "disease": "occlusal_plane_cant",
+  "requested_disease": "occlusal_plane_cant",
+  "severity": 0.7,
+  "warp_sigma": 52.0,
+  "feather": 21,
+  "control_points": 79,
+  "mask_pixels": 545569,
+  "delta_abs_mean": 0.5851300954818726,
+  "delta_abs_max": 41.352516174316406,
+  "output_image": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs\\face_template_smoke\\final_output.png"
+}

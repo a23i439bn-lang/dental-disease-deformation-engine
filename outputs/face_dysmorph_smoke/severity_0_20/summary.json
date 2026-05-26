@@ -1,0 +1,13 @@
+{
+  "input": "C:\\Users\\LIU\\Downloads\\卒業研究1 - コピー\\data\\inputs\\face.png",
+  "detector_mode": "mediapipe_tasks_face_landmarker",
+  "disease": "mandibular_protrusion",
+  "severity": 0.2,
+  "warp_sigma": 52.0,
+  "feather": 21,
+  "control_points": 65,
+  "mask_pixels": 491316,
+  "delta_abs_mean": 0.6381634473800659,
+  "delta_abs_max": 35.58723068237305,
+  "output_image": "C:\\Users\\LIU\\Downloads\\卒業研究1 - コピー\\face_dysmorph_smoke\\severity_0_20\\final_output.png"
+}

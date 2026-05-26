@@ -1,0 +1,33 @@
+{
+  "input": "C:\\Users\\LIU\\Downloads\\卒業研究1\\data\\inputs\\face.png",
+  "detector_mode": "mediapipe_tasks_face_landmarker",
+  "disease": "occlusal_plane_cant",
+  "requested_disease": "occlusal_plane_cant",
+  "severity": 0.8,
+  "warp_sigma": 52.0,
+  "feather": 21,
+  "control_points": 79,
+  "mask_pixels": 545569,
+  "delta_abs_mean": 0.6261796951293945,
+  "delta_abs_max": 44.07016372680664,
+  "sd_refine": {
+    "enabled": true,
+    "mode": "local_edit",
+    "model_id": "runwayml/stable-diffusion-v1-5",
+    "device": "cpu",
+    "steps": 24,
+    "guidance_scale": 4.5,
+    "strength": 0.2,
+    "seed": 1234,
+    "prompt": "realistic clinical facial photograph, preserve the same person, preserve identity, natural skin texture, medically plausible orthodontic facial appearance, high detail, occlusal plane cant, asymmetric mouth line, slanted commissure height, subtle lower facial tilt, realistic dentofacial asymmetry, pronounced but realistic medically plausible change",
+    "negative_prompt": "different person, changed identity, distorted face, extra facial features, cartoon, painting, illustration, cgi, 3d render, plastic skin, over-smoothed skin, malformed jaw",
+    "mask_pixels": 490271,
+    "bbox": [
+      855,
+      1061,
+      2053,
+      1978
+    ]
+  },
+  "output_image": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs\\face_occlusal_cant_refine_focus\\final_output.png"
+}

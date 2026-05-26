@@ -1,0 +1,33 @@
+{
+  "input": "C:\\Users\\LIU\\Downloads\\卒業研究1\\data\\inputs\\face.png",
+  "detector_mode": "mediapipe_tasks_face_landmarker",
+  "disease": "mandibular_protrusion",
+  "requested_disease": "mandibular_protrusion",
+  "severity": 0.8,
+  "warp_sigma": 52.0,
+  "feather": 21,
+  "control_points": 65,
+  "mask_pixels": 491316,
+  "delta_abs_mean": 1.4722371101379395,
+  "delta_abs_max": 70.48361206054688,
+  "sd_refine": {
+    "enabled": true,
+    "mode": "local_edit",
+    "model_id": "runwayml/stable-diffusion-v1-5",
+    "device": "cpu",
+    "steps": 24,
+    "guidance_scale": 4.5,
+    "strength": 0.2,
+    "seed": 1234,
+    "prompt": "realistic clinical facial photograph, preserve the same person, preserve identity, natural skin texture, medically plausible orthodontic facial appearance, high detail, mandibular prognathism, prominent chin and lower jaw, realistic lower-face skeletal morphology, pronounced but realistic medically plausible change",
+    "negative_prompt": "different person, changed identity, distorted face, extra facial features, cartoon, painting, illustration, cgi, 3d render, plastic skin, over-smoothed skin, malformed jaw",
+    "mask_pixels": 491316,
+    "bbox": [
+      855,
+      1061,
+      2053,
+      1978
+    ]
+  },
+  "output_image": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs\\face_template_refine_smoke\\final_output.png"
+}
