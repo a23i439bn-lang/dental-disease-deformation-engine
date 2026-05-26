@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "description": "Example manifest for future Osaka University clinical case analysis.",
+  "normal_group": [
+    {
+      "case_id": "normal_0001",
+      "image_path": "data/clinical_cases/normal/normal_0001.jpg",
+      "disease": "normal"
+    }
+  ],
+  "disease_groups": [
+    {
+      "disease": "mandibular_protrusion",
+      "cases": [
+        {
+          "case_id": "mp_0001",
+          "image_path": "data/clinical_cases/mandibular_protrusion/mp_0001.jpg"
+        }
+      ]
+    },
+    {
+      "disease": "maxillary_protrusion",
+      "cases": []
+    },
+    {
+      "disease": "chin_deviation_left",
+      "cases": []
+    },
+    {
+      "disease": "chin_deviation_right",
+      "cases": []
+    },
+    {
+      "disease": "occlusal_plane_cant",
+      "cases": []
+    }
+  ]
+}

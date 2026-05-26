@@ -11,7 +11,7 @@ from models.disease_encoder import DiseaseEncoder, DiseaseEncoderConfig
 from models.severity_policy import SeverityActor, SeverityPolicyConfig
 from models.texture_branch import TextureBranch, TextureBranchConfig
 
-
+''' デバイス名を解決する関数 '''
 def resolve_device(device_name: str) -> str:
     if device_name == "auto":
         return "cuda" if torch.cuda.is_available() else "cpu"
@@ -19,14 +19,14 @@ def resolve_device(device_name: str) -> str:
         raise RuntimeError("CUDA was requested but is not available.")
     return device_name
 
-
+''' モジュールのパラメータを凍結する関数 '''
 def freeze_module(module: nn.Module) -> nn.Module:
     for param in module.parameters():
         param.requires_grad_(False)
     module.eval()
     return module
 
-
+''' 研究用モジュールを構築する関数 '''
 def build_research_modules(config: dict[str, Any], device: str) -> dict[str, nn.Module]:
     disease_dim = int(config["model"]["disease_dim"])
     diseases = list(config["data"]["diseases"])
@@ -84,7 +84,7 @@ def build_research_modules(config: dict[str, Any], device: str) -> dict[str, nn.
     }
     return modules
 
-
+''' モジュールのパラメータを収集する関数 '''
 def collect_unique_trainable_params(*modules: nn.Module) -> list[torch.nn.Parameter]:
     unique_params: dict[int, torch.nn.Parameter] = {}
     for module in modules:

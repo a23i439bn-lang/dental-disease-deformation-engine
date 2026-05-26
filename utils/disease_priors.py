@@ -53,7 +53,7 @@ DISEASE_NAME_ALIASES = {
     },
 }
 
-
+''' 疾患名を正規化する関数 '''
 def canonicalize_disease_name(name: str) -> str:
     lowered = name.strip().lower()
     for canonical, aliases in DISEASE_NAME_ALIASES.items():
@@ -61,7 +61,7 @@ def canonicalize_disease_name(name: str) -> str:
             return canonical
     return lowered
 
-
+''' 疾患名のプリセットから利用可能な疾患名を解決する関数 '''
 def resolve_preset_disease_name(name: str, available_names: list[str] | tuple[str, ...] | set[str]) -> str:
     available_lookup = {str(item): str(item) for item in available_names}
     if name in available_lookup:
@@ -73,7 +73,7 @@ def resolve_preset_disease_name(name: str, available_names: list[str] | tuple[st
             return candidate
     raise KeyError(f"Unknown disease preset '{name}'")
 
-
+''' 疾患名のリストから構造的疾患を選択する関数 '''
 def select_structural_disease(disease_names: list[str]) -> str | None:
     for name in disease_names:
         canonical = canonicalize_disease_name(name)
@@ -81,7 +81,7 @@ def select_structural_disease(disease_names: list[str]) -> str | None:
             return canonical
     return None
 
-
+''' 指定された疾患に基づいてテンプレートの変位を構築する関数 '''
 def build_template_delta(
     source_landmarks: torch.Tensor,
     disease_name: str,
@@ -132,7 +132,7 @@ def build_template_delta(
 
     return delta
 
-
+''' 教師モデルのターゲットランドマークを構築する関数 '''
 def build_teacher_target_landmarks(
     source_landmarks: torch.Tensor,
     disease_names_batch: list[list[str]],

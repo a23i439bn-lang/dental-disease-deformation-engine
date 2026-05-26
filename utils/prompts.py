@@ -6,11 +6,11 @@ from typing import Any
 
 from utils.disease_priors import resolve_preset_disease_name
 
-
+''' プロンプトを構築する関数 '''
 def load_disease_prompts(path: str | Path = "presets/disease_prompts.json") -> dict[str, Any]:
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
-
+''' 症状の重症度をラベルに変換する関数 '''
 def severity_to_label(severity: float) -> str:
     if severity < 0.34:
         return "mild"
@@ -18,7 +18,7 @@ def severity_to_label(severity: float) -> str:
         return "moderate"
     return "severe"
 
-
+''' 疾患名のプリセットからプロンプトを構築する関数 '''
 def build_research_prompt(
     disease_names: list[str],
     severity: float,

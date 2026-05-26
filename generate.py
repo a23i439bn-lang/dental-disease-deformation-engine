@@ -85,7 +85,7 @@ DISEASE_SETTINGS: dict[str, dict[str, Any]] = {
     },
 }
 
-
+''' モジュールのパラメータを収集する関数 '''
 @dataclass
 class MultiRegionMask:
     mouth: Image.Image
@@ -94,7 +94,7 @@ class MultiRegionMask:
     composite: Image.Image
     preview: Image.Image
 
-
+''' 研究用モジュールを構築する関数 '''
 @dataclass
 class DiseasePreset:
     name: str
@@ -105,19 +105,19 @@ class DiseasePreset:
     strength_label: str
     denoise_strength: float
 
-
+''' 疾患名を正規化する関数 '''
 @dataclass
 class TrainingExportPackage:
     manifest: dict[str, Any]
     images: dict[str, Image.Image]
 
-
+''' 研究用モジュールを構築する関数 '''
 @dataclass
 class DenseFlowWarpResult:
     warped_image: Image.Image
     heatmap: Image.Image
 
-
+''' モジュールのパラメータを収集する関数 '''
 @dataclass
 class IdentityMetrics:
     cosine_similarity: float

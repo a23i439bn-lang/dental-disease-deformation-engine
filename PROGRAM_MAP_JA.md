@@ -1,78 +1,149 @@
 # プログラム対応表
 
-このファイルは、「どのファイルが何のためにあるのか」を短時間で把握するための一覧です。
+このファイルは、現在の卒業研究コードをどこから読めばよいかをまとめた対応表です。
 
 ## まず見るファイル
 
 - `README.md`
-  リポジトリ全体の目的と流れを説明します。
+  リポジトリ全体の目的と現在の方針
+- `infer_face_dysmorph.py`
+  顔貌疾患生成の実行入口
 - `infer_mouth_template.py`
-  現在の主力確認スクリプトです。
+  口腔 ROI ベース生成の実行入口
 - `SUPPORTED_DISEASES_JA.md`
-  対応疾患を確認できます。
+  現在扱っている疾患と生成方式の一覧
 
-## 学習系
+## 顔貌疾患生成
+
+- `infer_face_dysmorph.py`
+  顔画像入力、landmark 検出、疾患テンプレート呼び出し、warp、任意の SD 自然化までを実行
+- `disease_templates/__init__.py`
+  顔貌疾患テンプレートの登録
+- `disease_templates/base.py`
+  顔貌テンプレート共通の基底クラス
+- `disease_templates/mandibular_protrusion.py`
+  下顎前突テンプレート
+- `disease_templates/maxillary_protrusion.py`
+  上顎前突テンプレート
+- `disease_templates/chin_deviation_left.py`
+  左オトガイ偏位テンプレート
+- `disease_templates/chin_deviation_right.py`
+  右オトガイ偏位テンプレート
+- `disease_templates/occlusal_plane_cant.py`
+  咬合平面傾斜テンプレート
+
+## 顔貌生成の共通処理
+
+- `utils/face_landmarks.py`
+  MediaPipe Face Landmarker / FaceMesh による landmark 検出と画像 I/O
+- `utils/face_regions.py`
+  顔領域 index 群、下顔面・中顔面・咬合平面傾斜用マスク定義
+- `utils/face_warp.py`
+  dense displacement field、OpenCV remap、blend、debug 描画
+- `utils/face_refine.py`
+  顔貌疾患用 Stable Diffusion Inpaint 自然化
+  `chin_deviation` と `occlusal_plane_cant` 用の疾患別 edit mask もここにある
+
+## 口腔 ROI ベース生成
+
+- `infer_mouth_template.py`
+  口腔 ROI 抽出、疾患別変形、texture cue、SD img2img / inpaint まで実行
+- `utils/disease_priors.py`
+  既存の口腔 structural prior と teacher target 生成
+
+## 学習関連
 
 - `train_deformation.py`
-  口元の形だけを学習するフェーズ1です。
+  teacher target landmark を使った変形学習
 - `train.py`
-  Stable Diffusion ベースの最小学習です。
-
-## 推論・生成系
-
-- `infer_mouth_template.py`
-  口 ROI 抽出、歯マスク推定、幾何変形、局所 inpaint をまとめた確認用スクリプトです。
+  diffusion renderer を含む学習系の入口
 - `infer.py`
-  学習済みモデルを使う最小推論です。
-- `generate.py`
-  ControlNet や参照画像も含めた大きめの生成パイプラインです。
+  学習済みモデル推論の入口
 
-## データ系
-
-- `dataset/dataset_builder.py`
-  学習・推論用データセットを組み立てます。
-- `data/manifests/README.md`
-  manifest の置き場を説明します。
-- `data/dataset/README.md`
-  学習データの配置ルールを説明します。
-- `data/inputs_normal/README.md`
-  正常顔入力画像の置き場を説明します。
-- `data/SOURCES.md`
-  使用データの出典メモです。
-
-## モデル系
+## モデル関連
 
 - `models/deformation_policy.py`
-  ランドマーク変形量を予測するモデルです。
+  landmark delta を予測する変形モデル
 - `models/disease_encoder.py`
-  疾患名と severity を埋め込みに変えます。
+  疾患名と severity を埋め込むモデル
 - `models/texture_branch.py`
-  見た目補助の分岐です。
+  texture 補助分岐
 - `models/severity_policy.py`
-  severity 制御用モデルです。
+  severity 自動探索用ポリシー
 - `models/clip_loss.py`
-  疾患らしさに寄せる補助 loss です。
+  疾患らしさを補助する loss
 
-## Diffusion 系
+## Diffusion 関連
 
 - `diffusion/pipeline.py`
-  幾何変形、テクスチャ、Diffusion をつなぐ中核コードです。
+  Dense warp、texture branch、ControlNet、diffusion renderer の中核
 - `diffusion/controlnet_conditioning.py`
-  ControlNet に渡す条件画像を作ります。
+  ControlNet 用条件画像生成
 - `diffusion/disease_attention.py`
-  疾患埋め込みを attention 側へ渡す補助コードです。
+  疾患条件を attention に入れる補助
 
-## 補助コード
+## データ関連
 
-- `utils/disease_priors.py`
-  疾患ごとの教師変形やルールを定義します。
-- `utils/prompts.py`
-  Diffusion 用プロンプトを組み立てます。
-- `utils/factory.py`
-  モデルやパイプラインの生成をまとめます。
-- `utils/checkpointing.py`
-  checkpoint の保存・読込を補助します。
-- `utils/lora.py`
-  LoRA 関連の補助です。
-- `debug_visualize_delta.py`
-  ランドマーク変形の見え方を画像で確認する補助です。
+```text
+data/
+  README.md
+  SOURCES.md
+  inputs/                  単発実験用の入力画像
+  inputs_normal/           正常顔画像群
+  references/              参照症例画像
+  manifests/               研究用 manifest とラベル例
+  clinical_cases/          実症例統計ベース変形へ移行するための箱
+
+dataset/
+  dataset_builder.py       学習用データセット構築
+```
+
+## 実症例統計ベース変形の入口
+
+- `data/clinical_cases/`
+  阪大データなどの実症例を疾患別に格納するフォルダ
+- `data/clinical_cases/README.md`
+  `疾患画像 -> landmark 抽出 -> 正常平均との差分 -> 平均 delta 作成`
+  という今後の研究フローを記述
+
+## 現在の設計思想
+
+現在の本命は顔貌疾患生成です。
+
+- 幾何変形は heuristic / anatomical template で決める
+- diffusion は自然化と質感補助に使う
+- 将来は `clinical_cases/` を使って実症例統計ベース template に更新する
+
+## よく使う実行例
+
+### 顔貌疾患生成
+
+```powershell
+.\.venv\Scripts\python.exe infer_face_dysmorph.py `
+  --input data\inputs\face.png `
+  --disease mandibular_protrusion `
+  --severity 0.8 `
+  --output-dir outputs\face_demo
+```
+
+### 顔貌疾患生成 + 自然化
+
+```powershell
+.\.venv\Scripts\python.exe infer_face_dysmorph.py `
+  --input data\inputs\face.png `
+  --disease chin_deviation_left `
+  --severity 0.8 `
+  --enable-sd-refine `
+  --sd-render-main `
+  --output-dir outputs\face_refine_demo
+```
+
+### 口腔 ROI ベース生成
+
+```powershell
+.\.venv\Scripts\python.exe infer_mouth_template.py `
+  --input data\inputs\face.png `
+  --disease spacing `
+  --severity 1.0 `
+  --output-dir outputs\mouth_demo
+```

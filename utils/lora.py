@@ -8,11 +8,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
+''' LoRA（Low-Rank Adaptation）を実装するモジュールです。'''
 def sanitize_disease_name(name: str) -> str:
     return "".join(ch if ch.isalnum() else "_" for ch in name)
 
-
+''' 疾患名を正規化するためのエイリアスとプリセットの定義 '''
 @dataclass
 class LoRAConfig:
     rank: int = 4
@@ -64,7 +64,7 @@ class MultiDiseaseLoRALinear(nn.Module):
             update = update + low_rank * (scale * scaling)
         return base_out + update
 
-
+''' LoRAを管理するクラス '''
 class DiseaseLoRAManager:
     def __init__(self, disease_names: list[str], config: LoRAConfig) -> None:
         self.disease_names = disease_names

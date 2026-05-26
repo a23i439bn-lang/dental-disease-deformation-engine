@@ -1,3 +1,7 @@
+'''モデル状態および学習メタデータの保存と読み込みを行うチェックポイントユーティリティ
+機械学習や深層学習の文脈で、学習処理（トレーニング）の進行状況やパラメータを保存・復元する機能・仕組みを提供するモジュール
+これにより、トレーニングの途中で中断しても後から再開できるようになったり、学習したモデルを保存して後で使用したりすることが可能
+'''
 from __future__ import annotations
 
 import json
@@ -9,7 +13,7 @@ import torch.nn as nn
 
 from diffusion.pipeline import DiseaseDiffusionRenderer
 
-
+''' チェックポイントのロードと保存に関するユーティリティ関数 '''
 def load_config(config_path: str) -> dict[str, Any]:
     content = Path(config_path).read_text(encoding="utf-8")
     try:
@@ -19,7 +23,7 @@ def load_config(config_path: str) -> dict[str, Any]:
     except Exception:
         return json.loads(content)
 
-
+''' モジュールの状態を安全にロードするための関数''''
 def safe_load_module_state(
     module: nn.Module,
     state_dict: dict[str, torch.Tensor],
@@ -35,7 +39,7 @@ def safe_load_module_state(
         raise RuntimeError(f"{module_name} state_dict mismatch detected.")
     return {"missing_keys": missing_keys, "unexpected_keys": unexpected_keys}
 
-
+''' 研究用のチェックポイントを保存する関数'''
 def save_research_checkpoint(
     checkpoint_path: str | Path,
     config: dict[str, Any],
@@ -61,7 +65,7 @@ def save_research_checkpoint(
     checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
     torch.save(checkpoint, checkpoint_path)
 
-
+''' 研究用のチェックポイントをロードする関数'''
 def load_research_checkpoint(
     checkpoint_path: str | Path,
     disease_encoder: nn.Module,

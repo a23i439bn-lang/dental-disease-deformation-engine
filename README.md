@@ -1,113 +1,124 @@
-# 卒業研究1 - コピー
+# 卒業研究1
 
-このリポジトリは、正常な顔画像から口元の変形や局所生成を使って、歯科疾患らしい見た目を合成するための研究用コードです。
+このリポジトリは、歯科矯正の視診トレーニング用症例画像生成のための研究コードです。
 
-いまの中心テーマは次の2段構成です。
+現在の中心テーマは、正常顔画像から顔貌疾患画像を生成することです。
+特に、
 
-1. 幾何変形で「どこをどう変えるか」を制御する
-2. Diffusion / Inpainting で「写真として自然に見える質感」を補う
+- 下顎前突
+- 上顎前突
+- オトガイ偏位
+- 咬合平面傾斜
 
-## 全体の流れ
+のような顔貌特徴を、解剖学ベース変形と生成 AI 自然化の組み合わせで表現することを目指しています。
 
-```text
-正常顔
-  ↓
-顔・口ランドマーク検出
-  ↓
-口 ROI 抽出
-  ↓
-疾患ごとの幾何変形や局所マスク生成
-  ↓
-必要に応じて Stable Diffusion で局所自然化
-  ↓
-疾患画像として合成
-```
+## 研究方針
 
-## 主要ファイル
+重要な方針は次の 2 点です。
+
+1. 疾患構造は geometry engine で決める
+2. diffusion は写真感と自然化に限定する
+
+つまり、
+
+`解剖学ベース変形 + 生成 AI 自然化`
+
+を研究の基本設計にしています。
+
+## 現在の主な実装
+
+### 顔貌疾患生成
+
+- `infer_face_dysmorph.py`
+  顔貌疾患生成の入口
+- `disease_templates/`
+  疾患別テンプレート構造
+- `utils/face_landmarks.py`
+  landmark 検出
+- `utils/face_regions.py`
+  顔領域定義
+- `utils/face_warp.py`
+  dense warp / remap / blend
+- `utils/face_refine.py`
+  Stable Diffusion Inpaint による局所自然化
+
+対応済み顔貌疾患:
+
+- `mandibular_protrusion`
+- `maxillary_protrusion`
+- `chin_deviation_left`
+- `chin_deviation_right`
+- `occlusal_plane_cant`
+
+### 口腔 ROI ベース生成
 
 - `infer_mouth_template.py`
-  現在の主力確認スクリプトです。口 ROI ベースで `protrusion`、`openbite`、`spacing`、`caries` を試せます。
-- `generate.py`
-  より大きな生成パイプラインです。ControlNet や参照画像、口元マスクなども含めた実験向けです。
-- `train_deformation.py`
-  Diffusion を使わず、まず口元の形だけを学習させるフェーズ1の学習スクリプトです。
-- `train.py`
-  Stable Diffusion ベースの最小学習スクリプトです。
-- `infer.py`
-  学習済みパイプラインや U-Net を使って推論する最小スクリプトです。
-- `PROGRAM_MAP_JA.md`
-  ファイルごとの役割を日本語で一覧化したガイドです。
-- `SUPPORTED_DISEASES_JA.md`
-  どの疾患がどのスクリプトで扱えるかを整理した表です。
-- `EXPERIMENT_REPORT_JA.md`
-  実験条件や気づきをまとめたメモです。
 
-## ディレクトリ構成
+対応済み ROI 疾患:
 
-```text
-data/
-  inputs_normal/      正常顔の入力画像
-  dataset/            学習用データ
-  manifests/          データセット manifest
+- `spacing`
+- `openbite`
+- `protrusion`
+- `caries`
 
-dataset/
-  dataset_builder.py  データセット構築
+## 実行例
 
-diffusion/
-  pipeline.py                     幾何変形 + テクスチャ + Diffusion の中核
-  controlnet_conditioning.py      ControlNet 用条件画像の構築
-  disease_attention.py            疾患埋め込みを attention に渡す補助
+### 顔貌疾患生成
 
-models/
-  deformation_policy.py   ランドマーク変形量を予測するモデル
-  disease_encoder.py      疾患名と severity を埋め込みへ変換
-  texture_branch.py       見た目補助用の分岐
-  severity_policy.py      severity 制御用モデル
-  clip_loss.py            疾患らしさを補助する loss
-
-utils/
-  disease_priors.py   疾患ごとの教師変形・ルール
-  prompts.py          Diffusion 用プロンプト生成
-  factory.py          モデルやパイプラインの生成
-  checkpointing.py    checkpoint の保存と再開
-  lora.py             LoRA 補助
+```powershell
+.\.venv\Scripts\python.exe infer_face_dysmorph.py `
+  --input data\inputs\face.png `
+  --disease mandibular_protrusion `
+  --severity 0.8 `
+  --output-dir outputs\face_demo
 ```
 
-## よく使う実行例
+### 顔貌疾患生成 + 自然化
 
-### 口 ROI ベースで疾患を試す
+```powershell
+.\.venv\Scripts\python.exe infer_face_dysmorph.py `
+  --input data\inputs\face.png `
+  --disease occlusal_plane_cant `
+  --severity 0.8 `
+  --enable-sd-refine `
+  --sd-render-main `
+  --output-dir outputs\face_refine_demo
+```
+
+### 口腔 ROI ベース生成
 
 ```powershell
 .\.venv\Scripts\python.exe infer_mouth_template.py `
   --input data\inputs\face.png `
   --disease spacing `
   --severity 1.0 `
-  --output-dir outputs\demo_spacing
+  --output-dir outputs\mouth_demo
 ```
 
-### 局所 Inpaint まで使う
+## データ構成
 
-```powershell
-.\.venv\Scripts\python.exe infer_mouth_template.py `
-  --input data\inputs\face.png `
-  --disease protrusion `
-  --severity 1.0 `
-  --enable-sd-refine `
-  --sd-local-edit `
-  --sd-render-main `
-  --output-dir outputs\demo_protrusion
+```text
+data/
+  inputs/          単発実験用の入力画像
+  inputs_normal/   正常顔画像群
+  references/      参照症例画像
+  manifests/       研究用 manifest
+  clinical_cases/  実症例統計ベース変形へ移行するための箱
 ```
 
-### 幾何変形だけを学習する
+`clinical_cases/` は、阪大データなどの実症例画像を受けるためのフォルダです。
+今後はここから
 
-```powershell
-.\.venv\Scripts\python.exe train_deformation.py --device cpu
-```
+`疾患画像 -> landmark 抽出 -> 正常平均との差分 -> 平均 delta 作成`
 
-## 初めて読むときのおすすめ順
+を行い、手作り変形から実症例統計ベース変形へ移行する予定です。
 
-1. `README.md`
-2. `PROGRAM_MAP_JA.md`
-3. `infer_mouth_template.py`
-4. `utils/disease_priors.py`
-5. `diffusion/pipeline.py`
+## 現在の位置づけ
+
+今の顔貌生成は heuristic / anatomical template ベースです。
+次の研究上の大きな段階は、
+
+- 現在: 手作り変形
+- 次: 実症例統計ベース変形
+
+への移行です。

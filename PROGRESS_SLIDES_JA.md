@@ -1,216 +1,178 @@
-# 卒業研究 進捗報告スライド原稿
+# 卒業研究 進捗スライド用メモ
 
-このファイルは、そのまま PowerPoint に貼り付けて使えるように作った進捗報告用の原稿です。
-
----
-
-## 1. タイトル
-
-- 卒業研究 進捗報告
-- 顔画像からの歯科疾患合成
-- 幾何変形と Diffusion を組み合わせた口腔画像生成
-
-発表者名、日付、所属はここに追記してください。
+このファイルは、そのままスライドへ写しやすいように現状の進捗を整理したメモです。
 
 ---
 
-## 2. 研究の目的
+## 1. 研究タイトル
 
-- 正常な顔画像から、歯科疾患らしい口元画像を生成したい
-- ただ自然に見えるだけでなく、疾患の形状を制御できる方法を目指す
-- 研究上は「形の制御」と「見た目の自然さ」を分けて設計することが重要
-
-話すポイント:
-- 最初から生成 AI に全部任せると、どこが原因で失敗したか分からなくなる
-- そのため、まず幾何変形で疾患構造を作り、後から Diffusion で自然化する方針を採用した
+- 歯科矯正の視診トレーニング用症例画像生成
+- 正常顔画像から顔貌疾患画像を生成する研究
+- 幾何変形と生成 AI を組み合わせた視診教材生成
 
 ---
 
-## 3. 現在の全体パイプライン
+## 2. 研究目的
+
+- 患者プライバシーを侵害しない症例画像生成
+- 稀な症例も含む多様な症例の疑似生成
+- 視診教育に使える顔貌・口腔所見の生成
+- 将来は実症例統計に基づく変形モデルへ移行
+
+---
+
+## 3. 現在の設計思想
+
+- diffusion に全部を任せない
+- geometry engine で疾患構造を決める
+- diffusion は写真感と自然化に限定する
+
+まとめると:
+
+`解剖学ベース変形 + 生成 AI 自然化`
+
+---
+
+## 4. 現在のパイプライン
 
 ```text
-正常顔
-  ↓
-顔・口ランドマーク検出
-  ↓
-mouth ROI 抽出
-  ↓
-疾患ごとの幾何変形 / 疾患マスク生成
-  ↓
-Stable Diffusion Inpaint による局所自然化
-  ↓
-最終合成画像
+正常顔画像
+  -> MediaPipe landmark 抽出
+  -> 疾患別 landmark deformation
+  -> dense warp / remap
+  -> 必要に応じて Stable Diffusion Inpaint 自然化
+  -> 最終症例画像
 ```
 
-話すポイント:
-- いまは warp を最終出力ではなく、Diffusion に渡す条件として使う方向へ移行中
+---
+
+## 5. 実装済みの2本柱
+
+### 口腔 ROI ベース
+
+- `spacing`
+- `openbite`
+- `protrusion`
+- `caries`
+
+### 顔貌疾患ベース
+
+- `mandibular_protrusion`
+- `maxillary_protrusion`
+- `chin_deviation_left`
+- `chin_deviation_right`
+- `occlusal_plane_cant`
 
 ---
 
-## 4. 実装済みの主な要素
+## 6. 顔貌側の進捗
 
-- MediaPipe による顔・口ランドマーク検出
-- mouth ROI 抽出
-- 歯マスク推定
-- 疾患別テンプレ変形
-  - `protrusion`
-  - `openbite`
-  - `spacing`
-  - `caries`
-- Stable Diffusion の img2img 接続
-- Stable Diffusion Inpaint による local edit
-- `condition image + disease mask` を使う構成
+- `disease_templates/` へテンプレート構造を分離
+- landmark 群、顔領域 mask、warp を共通化
+- 顔貌疾患ごとの geometric template を実装
+- `infer_face_dysmorph.py` を入口専用に整理
 
-関連ファイル:
-- `infer_mouth_template.py`
-- `utils/disease_priors.py`
-- `diffusion/pipeline.py`
+研究上の意味:
+
+- 疾患らしさをコード上で説明できる
+- 将来の統計テンプレート化に接続しやすい
+- 教育用の ablation がしやすい
 
 ---
 
-## 5. ここまでの考え方
+## 7. 顔貌側で追加した自然化
 
-- まず「疾患の形」を作る
-- 次に「写真として自然な見た目」を作る
-- 形の制御は幾何変形が担当
-- 質感、境界、影、口腔内の暗部などは Diffusion が担当
+- 顔貌変形後に Stable Diffusion Inpaint を局所適用
+- 編集領域は disease mask に限定
+- `sd-render-main` により元顔の文脈を保った condition image を作成
 
-話すポイント:
-- ルールベース変形だけではリアリティに限界がある
-- ただし、幾何変形は無駄ではなく、Diffusion の条件として重要
+重要点:
 
----
-
-## 6. spacing で分かったこと
-
-- 単純な ROI 全体の滑らかな変形では、数値上変形していても「すきっ歯」に見えにくい
-- 原因は、前歯 2 本が独立して動いているように見えず、中央がなめらかに引き伸ばされるため
-- そのため、`spacing` では次の方向へ改良した
-  - 前歯 2 本を意識したマスク生成
-  - 前歯 2 本の cut-and-paste 的な再配置
-  - gap 部の暗部補完
-  - local inpaint による自然化
+- 形は geometry が主
+- diffusion は texture / photo realism の補助
 
 ---
 
-## 7. protrusion で分かったこと
+## 8. 疾患別自然化の進捗
 
-- `protrusion` は `spacing` より ROI 変形と相性が良い
-- ただし、自然に見せるには局所 inpaint の補助が必要
-- 現在は `condition image + disease mask` を使って上顎前歯周辺だけを編集している
+### `chin_deviation`
 
-実行結果:
-- 出力先: `outputs/sd_refine_protrusion_render_main`
+- 専用 prompt を追加
+- 偏位側 jawline と chin 周辺を重点化する edit mask を追加
 
----
+### `occlusal_plane_cant`
 
-## 8. 最近の実験構成
-
-- `sd-local-edit`
-  - 疾患部だけを Stable Diffusion Inpaint で編集
-- `sd-render-main`
-  - warp 結果をそのまま最終画像にせず、condition image として利用
-
-この構成の狙い:
-- Diffusion が不自然な warp を消すのではなく
-- 疾患構造をヒントに、より自然な写真表現を描くようにする
+- 専用 prompt を追加
+- 口角高低差と mouth line 周辺を重点化する edit mask を追加
 
 ---
 
-## 9. 実験結果の例: spacing
+## 9. データ整理の進捗
 
-参照ファイル:
-- `outputs/sd_refine_spacing_render_main/mouth_roi.png`
-- `outputs/sd_refine_spacing_render_main/warped_roi.png`
-- `outputs/sd_refine_spacing_render_main/condition_roi.png`
-- `outputs/sd_refine_spacing_render_main/disease_edit_mask.png`
-- `outputs/sd_refine_spacing_render_main/refined_roi.png`
-- `outputs/sd_refine_spacing_render_main/final_output.png`
+- `data/` を再整理
+- manifest 類を `data/manifests/` に集約
+- 実症例受け皿として `data/clinical_cases/` を作成
 
-主要数値:
-- disease: `spacing`
-- severity: `1.0`
-- `delta_abs_max = 52.87`
-- `disease_edit_pixels = 7873`
-- `renderer_condition_enabled = true`
+現在の主な構成:
 
-話すポイント:
-- gap を条件として与え、局所 inpaint で自然化している
+```text
+data/
+  inputs/
+  inputs_normal/
+  references/
+  manifests/
+  clinical_cases/
+```
 
 ---
 
-## 10. 実験結果の例: protrusion
+## 10. 阪大データ到着後の次段階
 
-参照ファイル:
-- `outputs/sd_refine_protrusion_render_main/mouth_roi.png`
-- `outputs/sd_refine_protrusion_render_main/warped_roi.png`
-- `outputs/sd_refine_protrusion_render_main/condition_roi.png`
-- `outputs/sd_refine_protrusion_render_main/disease_edit_mask.png`
-- `outputs/sd_refine_protrusion_render_main/refined_roi.png`
-- `outputs/sd_refine_protrusion_render_main/final_output.png`
+```text
+疾患画像
+  -> landmark 抽出
+  -> 正常群平均との差分計算
+  -> 平均 delta 作成
+  -> statistical disease template 化
+```
 
-主要数値:
-- disease: `protrusion`
-- severity: `1.0`
-- `delta_abs_max = 10.11`
-- `disease_edit_pixels = 12243`
-- `renderer_condition_enabled = true`
+ここで研究が一段上がる:
 
-話すポイント:
-- spacing よりも geometry と相性はよいが、まだ強い疾患感の表現は改善余地がある
+- 今: 手作り変形
+- 次: 実症例統計ベース変形
 
 ---
 
-## 11. 現時点の到達点
+## 11. 現在の強み
 
-- 口元 ROI ベースの疾患生成パイプラインを構築できた
-- 疾患ごとの幾何変形と local inpaint を接続できた
-- `warp を最終画像として使う` から `warp を condition として使う` へ方針転換できた
-- `spacing` と `protrusion` で、条件画像ベースの Inpaint 実験まで進んだ
+- heuristic でも顔貌疾患テンプレート構造まで実装済み
+- 口腔 ROI 系と顔貌系を分けて考えられている
+- geometry first の思想が一貫している
+- 実症例統計ベースへ移るためのデータ構造も準備済み
 
 ---
 
 ## 12. 現在の課題
 
-- `spacing`
-  - まだ「前歯 2 本が独立して離れた」見え方が弱い場合がある
-- `openbite`
-  - 上下接触の消失をもっと明確に条件化する必要がある
-- `protrusion`
-  - 上顎前歯の押し出し感をさらに強める必要がある
-- 共通課題
-  - Nano Banana のような強い写真感には、より強い条件設計が必要
+- 顔貌 edit mask はまだ重みマップ化の余地がある
+- chin deviation の中央連結と occlusal cant の口角差強調はさらに改善余地あり
+- 実症例統計はまだ未導入
+- 視診教育としての評価実験はこれから整理が必要
 
 ---
 
-## 13. 次にやること
+## 13. 今後やること
 
-- 歯 instance mask の精密化
-- disease mask の改善
-- `spacing` の前歯 2 本分離をさらに明確化
-- `openbite` の接触消失領域の明確化
-- ControlNet の追加
-  - edge map
-  - tooth segmentation map
-  - gap mask
+1. `clinical_cases/` を読む解析スクリプトを作る
+2. 正常群平均 landmark を作る
+3. 疾患別平均 delta を算出する
+4. heuristic template と statistical template を比較する
+5. 視診教育への有効性を評価する
 
 ---
 
-## 14. まとめ
+## 14. ひとことでまとめ
 
-- ルールベース変形だけでは限界がある
-- ただし、幾何変形は Diffusion の条件として非常に重要
-- 現在は `condition image + local inpaint` 構成まで到達している
-- 今後は `歯 instance aware + disease mask aware + ControlNet` の方向へ進める
-
----
-
-## 15. 補足資料
-
-必要なら最後に以下を添付してください。
-
-- `README.md`
-- `PROGRAM_MAP_JA.md`
-- `SUPPORTED_DISEASES_JA.md`
-- `EXPERIMENT_REPORT_JA.md`
-- `outputs/` 以下の代表画像
+- 口腔 ROI ベース生成はすでに一通り動作
+- 顔貌疾患生成はテンプレート構造へ移行済み
+- 次の研究の核は `実症例統計ベース変形` への移行
