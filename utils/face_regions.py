@@ -49,6 +49,38 @@ def build_convex_mask(
     return _blur_mask(mask, feather)
 
 
+def build_anatomical_weight_map(
+    image_shape: tuple[int, int, int],
+    landmarks: np.ndarray,
+    weighted_groups: list[tuple[list[int], float]],
+    base_mask: np.ndarray,
+    feather: int,
+    base_weight: float = 0.08,
+) -> np.ndarray:
+    height, width = image_shape[:2]
+    weight_map = np.zeros((height, width), dtype=np.float32)
+    base = np.clip(base_mask.astype(np.float32) / 255.0, 0.0, 1.0)
+    weight_map = np.maximum(weight_map, base * float(base_weight))
+    point_radius = max(4, int(min(width, height) * 0.018))
+
+    for indices, strength in weighted_groups:
+        if not indices or strength <= 0.0:
+            continue
+        region = np.zeros((height, width), dtype=np.uint8)
+        points = landmarks[indices].astype(np.int32)
+        if len(points) >= 3:
+            cv2.fillConvexPoly(region, cv2.convexHull(points), 255)
+        else:
+            for x, y in points:
+                cv2.circle(region, (int(x), int(y)), point_radius, 255, -1)
+        region = _blur_mask(region, max(feather * 2 + 1, 9))
+        region_f = np.clip(region.astype(np.float32) / 255.0, 0.0, 1.0)
+        weight_map = np.maximum(weight_map, region_f * float(strength))
+
+    weight_map *= base
+    return np.clip(weight_map * 255.0, 0.0, 255.0).astype(np.uint8)
+
+
 def build_lower_face_mask(image_shape: tuple[int, int, int], landmarks: np.ndarray, feather: int) -> np.ndarray:
     return build_convex_mask(
         image_shape,

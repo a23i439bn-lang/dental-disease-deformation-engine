@@ -1,0 +1,25 @@
+{
+  "input": "C:\\Users\\LIU\\Downloads\\卒業研究1\\data\\inputs_normal\\ffhq_subset\\00039.png",
+  "detector_mode": "mediapipe_tasks_face_landmarker",
+  "disease": "chin_deviation_left",
+  "requested_disease": "chin_deviation_left",
+  "severity": 0.8,
+  "warp_sigma": 52.0,
+  "feather": 21,
+  "control_points": 65,
+  "mask_pixels": 14639,
+  "weight_map_mean": 0.033995624617034315,
+  "weight_map_max": 0.9019607843137255,
+  "shading_map_mean": 0.005710616766237745,
+  "shading_map_max": 0.18823529411764706,
+  "pseudo_depth_mean": 0.006451954561121323,
+  "pseudo_depth_max": 0.19215686274509805,
+  "pseudo_highlight_mean": 0.0015303667853860295,
+  "pseudo_highlight_max": 0.043137254901960784,
+  "delta_abs_mean": 0.1761523187160492,
+  "delta_abs_max": 4.929022312164307,
+  "sd_refine": {
+    "enabled": false
+  },
+  "output_image": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs\\pseudo3d_chin_left_s080\\final_output.png"
+}

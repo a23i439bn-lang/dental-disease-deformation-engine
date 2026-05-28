@@ -13,6 +13,7 @@ from utils.face_regions import (
     NOSE_ANCHOR_IDX,
     RIGHT_CHIN_SIDE_IDX,
     RIGHT_LOWER_JAW_IDX,
+    build_anatomical_weight_map,
     build_lower_face_mask,
     face_metrics,
 )
@@ -38,6 +39,32 @@ class ChinDeviationRightTemplate(FaceDiseaseTemplate):
         jaw_shift = metrics["face_width"] * (0.010 + 0.028 * severity)
         cant_drop = metrics["face_height"] * (0.004 + 0.010 * severity)
 
+        lower_face_pivot = np.array(
+            [
+                metrics["mouth_center_x"],
+                metrics["mouth_center_y"] - metrics["mouth_height"] * 0.75,
+            ],
+            dtype=np.float32,
+        )
+        lower_block = self.unique_indices(
+            LEFT_LOWER_JAW_IDX,
+            RIGHT_LOWER_JAW_IDX,
+            LEFT_CHIN_SIDE_IDX,
+            RIGHT_CHIN_SIDE_IDX,
+            CHIN_IDX,
+            MIDLINE_LOWER_FACE_IDX,
+            LOWER_LIP_IDX,
+        )
+        self.apply_block_transform(
+            src_points,
+            dst_points,
+            lower_block,
+            pivot=lower_face_pivot,
+            translation=(chin_shift * 0.20, cant_drop * 0.22),
+            rotation_deg=-(1.2 + 2.4 * severity),
+            weight=0.78,
+        )
+
         for idx in CHIN_IDX + MIDLINE_LOWER_FACE_IDX:
             dst_points[idx, 0] += chin_shift
         for idx in RIGHT_LOWER_JAW_IDX + RIGHT_CHIN_SIDE_IDX:
@@ -62,9 +89,24 @@ class ChinDeviationRightTemplate(FaceDiseaseTemplate):
                 + LOWER_LIP_IDX
             )
         )
+        mask = build_lower_face_mask(image_shape, landmarks, feather)
+        weight_map = build_anatomical_weight_map(
+            image_shape,
+            landmarks,
+            [
+                (CHIN_IDX + MIDLINE_LOWER_FACE_IDX, 1.00),
+                (RIGHT_CHIN_SIDE_IDX + RIGHT_LOWER_JAW_IDX, 0.78),
+                (LEFT_CHIN_SIDE_IDX + LEFT_LOWER_JAW_IDX, 0.52),
+                (LOWER_LIP_IDX, 0.58),
+            ],
+            base_mask=mask,
+            feather=feather,
+            base_weight=0.10,
+        )
         return TemplateResult(
             canonical_name=self.canonical_name,
-            mask=build_lower_face_mask(image_shape, landmarks, feather),
+            mask=mask,
             src_points=src_points[control_indices],
             dst_points=dst_points[control_indices],
+            weight_map=weight_map,
         )

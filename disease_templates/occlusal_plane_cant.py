@@ -12,6 +12,7 @@ from utils.face_regions import (
     MOUTH_OUTER_IDX,
     NOSE_ANCHOR_IDX,
     RIGHT_LOWER_JAW_IDX,
+    build_anatomical_weight_map,
     build_occlusal_cant_mask,
     face_metrics,
 )
@@ -45,6 +46,18 @@ class OcclusalPlaneCantTemplate(FaceDiseaseTemplate):
         jaw_compensation = metrics["face_height"] * (0.004 + 0.008 * severity)
         mouth_center_x = metrics["mouth_center_x"]
 
+        mouth_pivot = np.array([metrics["mouth_center_x"], metrics["mouth_center_y"]], dtype=np.float32)
+        cant_block = self.unique_indices(MOUTH_OUTER_IDX, LOWER_LIP_IDX, MOUTH_CORNER_IDX)
+        self.apply_block_transform(
+            src_points,
+            dst_points,
+            cant_block,
+            pivot=mouth_pivot,
+            rotation_deg=self.direction * (1.4 + 2.6 * severity),
+            scale=(1.0, 1.0 + 0.004 * severity),
+            weight=0.68,
+        )
+
         for idx in MOUTH_OUTER_IDX + LOWER_LIP_IDX:
             x_offset = (landmarks[idx, 0] - mouth_center_x) / max(metrics["mouth_width"], 1.0)
             dst_points[idx, 1] += self.direction * x_offset * cant_amplitude
@@ -64,9 +77,24 @@ class OcclusalPlaneCantTemplate(FaceDiseaseTemplate):
         control_indices = sorted(
             set(anchor_indices + MOUTH_OUTER_IDX + LOWER_LIP_IDX + MOUTH_CORNER_IDX + CHIN_IDX + LEFT_LOWER_JAW_IDX + RIGHT_LOWER_JAW_IDX)
         )
+        mask = build_occlusal_cant_mask(image_shape, landmarks, feather)
+        weight_map = build_anatomical_weight_map(
+            image_shape,
+            landmarks,
+            [
+                (MOUTH_CORNER_IDX + MOUTH_OUTER_IDX, 1.00),
+                (LOWER_LIP_IDX, 0.78),
+                (LEFT_LOWER_JAW_IDX + RIGHT_LOWER_JAW_IDX, 0.42),
+                (CHIN_IDX, 0.30),
+            ],
+            base_mask=mask,
+            feather=feather,
+            base_weight=0.08,
+        )
         return TemplateResult(
             canonical_name=self.canonical_name,
-            mask=build_occlusal_cant_mask(image_shape, landmarks, feather),
+            mask=mask,
             src_points=src_points[control_indices],
             dst_points=dst_points[control_indices],
+            weight_map=weight_map,
         )

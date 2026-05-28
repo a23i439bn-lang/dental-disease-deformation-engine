@@ -12,6 +12,7 @@ def build_dense_displacement(
     dst_points: np.ndarray,
     sigma: float,
     mask: np.ndarray,
+    weight_map: np.ndarray | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     height, width = image_shape[:2]
     yy, xx = np.mgrid[0:height, 0:width].astype(np.float32)
@@ -33,9 +34,10 @@ def build_dense_displacement(
     disp_x = disp_x / weight_sum
     disp_y = disp_y / weight_sum
 
-    mask_f = mask.astype(np.float32) / 255.0
-    disp_x *= mask_f
-    disp_y *= mask_f
+    deformation_weight = mask if weight_map is None else weight_map
+    weight_f = np.clip(deformation_weight.astype(np.float32) / 255.0, 0.0, 1.0)
+    disp_x *= weight_f
+    disp_y *= weight_f
     return disp_x, disp_y
 
 

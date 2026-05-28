@@ -1,0 +1,9 @@
+{
+  "output_root": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs\\pseudo3d_severity_sweep",
+  "report_dir": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs\\pseudo3d_severity_sweep\\report",
+  "num_cases": 12,
+  "num_panels": 12,
+  "summary_table": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs\\pseudo3d_severity_sweep\\report\\summary_table.csv",
+  "aggregate_table": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs\\pseudo3d_severity_sweep\\report\\aggregate_by_disease_severity.csv",
+  "report": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs\\pseudo3d_severity_sweep\\report\\report.md"
+}

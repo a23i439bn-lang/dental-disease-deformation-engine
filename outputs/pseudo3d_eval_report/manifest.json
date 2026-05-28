@@ -1,0 +1,9 @@
+{
+  "output_root": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs",
+  "report_dir": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs\\pseudo3d_eval_report",
+  "num_cases": 20,
+  "num_panels": 20,
+  "summary_table": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs\\pseudo3d_eval_report\\summary_table.csv",
+  "aggregate_table": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs\\pseudo3d_eval_report\\aggregate_by_disease_severity.csv",
+  "report": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs\\pseudo3d_eval_report\\report.md"
+}

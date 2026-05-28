@@ -12,6 +12,7 @@ from utils.face_regions import (
     MIDLINE_LOWER_FACE_IDX,
     NOSE_ANCHOR_IDX,
     RIGHT_LOWER_JAW_IDX,
+    build_anatomical_weight_map,
     build_lower_face_mask,
     face_metrics,
 )
@@ -38,6 +39,45 @@ class MandibularProtrusionTemplate(FaceDiseaseTemplate):
         lower_lip_drop = metrics["face_height"] * (0.005 + 0.010 * severity)
         cheek_widen = metrics["face_width"] * (0.004 + 0.012 * severity)
         chin_forward_fan = metrics["face_width"] * (0.008 + 0.018 * severity)
+
+        mouth_pivot = np.array(
+            [
+                metrics["mouth_center_x"],
+                metrics["mouth_center_y"] - metrics["mouth_height"] * 0.85,
+            ],
+            dtype=np.float32,
+        )
+        mandibular_block = self.unique_indices(
+            LEFT_LOWER_JAW_IDX,
+            RIGHT_LOWER_JAW_IDX,
+            CHIN_IDX,
+            MIDLINE_LOWER_FACE_IDX,
+            LOWER_LIP_IDX,
+        )
+        self.apply_block_transform(
+            src_points,
+            dst_points,
+            mandibular_block,
+            pivot=mouth_pivot,
+            translation=(0.0, chin_drop * 0.28),
+            scale=(1.0 + 0.018 * severity, 1.0 + 0.010 * severity),
+        )
+        self.apply_block_transform(
+            src_points,
+            dst_points,
+            LEFT_LOWER_JAW_IDX + CHIN_IDX,
+            pivot=mouth_pivot,
+            rotation_deg=0.9 + 1.2 * severity,
+            weight=0.55,
+        )
+        self.apply_block_transform(
+            src_points,
+            dst_points,
+            RIGHT_LOWER_JAW_IDX + CHIN_IDX,
+            pivot=mouth_pivot,
+            rotation_deg=-(0.9 + 1.2 * severity),
+            weight=0.55,
+        )
 
         for idx in LEFT_LOWER_JAW_IDX:
             dst_points[idx, 0] -= jaw_widen
@@ -72,9 +112,24 @@ class MandibularProtrusionTemplate(FaceDiseaseTemplate):
                 + MIDLINE_LOWER_FACE_IDX
             )
         )
+        mask = build_lower_face_mask(image_shape, landmarks, feather)
+        weight_map = build_anatomical_weight_map(
+            image_shape,
+            landmarks,
+            [
+                (CHIN_IDX + MIDLINE_LOWER_FACE_IDX, 1.00),
+                (LEFT_LOWER_JAW_IDX + RIGHT_LOWER_JAW_IDX, 0.72),
+                (LOWER_LIP_IDX, 0.62),
+                ([93, 132, 58, 323, 361, 288], 0.30),
+            ],
+            base_mask=mask,
+            feather=feather,
+            base_weight=0.10,
+        )
         return TemplateResult(
             canonical_name=self.canonical_name,
-            mask=build_lower_face_mask(image_shape, landmarks, feather),
+            mask=mask,
             src_points=src_points[control_indices],
             dst_points=dst_points[control_indices],
+            weight_map=weight_map,
         )

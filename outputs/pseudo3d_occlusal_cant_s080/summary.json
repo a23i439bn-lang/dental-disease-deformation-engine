@@ -1,0 +1,25 @@
+{
+  "input": "C:\\Users\\LIU\\Downloads\\卒業研究1\\data\\inputs_normal\\ffhq_subset\\00039.png",
+  "detector_mode": "mediapipe_tasks_face_landmarker",
+  "disease": "occlusal_plane_cant",
+  "requested_disease": "occlusal_plane_cant",
+  "severity": 0.8,
+  "warp_sigma": 52.0,
+  "feather": 21,
+  "control_points": 79,
+  "mask_pixels": 16026,
+  "weight_map_mean": 0.06353490492876838,
+  "weight_map_max": 0.7725490196078432,
+  "shading_map_mean": 0.002181587967218137,
+  "shading_map_max": 0.16862745098039217,
+  "pseudo_depth_mean": 0.0036489449295343136,
+  "pseudo_depth_max": 0.25098039215686274,
+  "pseudo_highlight_mean": 0.0013172224456188726,
+  "pseudo_highlight_max": 0.08627450980392157,
+  "delta_abs_mean": 0.014955592341721058,
+  "delta_abs_max": 0.21878120303153992,
+  "sd_refine": {
+    "enabled": false
+  },
+  "output_image": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs\\pseudo3d_occlusal_cant_s080\\final_output.png"
+}

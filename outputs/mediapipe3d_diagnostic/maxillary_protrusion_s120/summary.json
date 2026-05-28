@@ -1,0 +1,8 @@
+{
+  "input": "C:\\Users\\LIU\\Downloads\\卒業研究1\\data\\inputs_normal\\ffhq_subset\\00039.png",
+  "detector_mode": "mediapipe_tasks_face_landmarker_3d",
+  "disease": "maxillary_protrusion",
+  "severity": 1.2,
+  "depth_scale": 160.0,
+  "output_panel": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs\\mediapipe3d_diagnostic\\maxillary_protrusion_s120\\pseudo3d_landmark_diagnostic.png"
+}

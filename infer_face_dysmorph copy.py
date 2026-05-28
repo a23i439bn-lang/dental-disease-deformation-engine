@@ -1,3 +1,4 @@
+'''顔の形をテンプレートに合わせて変形し、必要に応じてStable Diffusion（画像生成AI）でキレイに仕上げる実行プログラム'''
 from __future__ import annotations
 
 import argparse
@@ -31,7 +32,8 @@ from utils.face_warp import (
     remap_image,
 )
 
-
+'''あらかじめ用意した型に合わせて顔の形を歪ませる処理と、
+お好みで画像生成AI（Stable Diffusion）を使ってキレイに仕上げるための実行プログラム'''
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Face dysmorph template inference with lower-face geometric warping.")
     parser.add_argument("--input", required=True, help="Input face image path")
@@ -68,7 +70,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--sd-roi-pad-ratio", type=float, default=0.16, help="Padding ratio around the disease mask crop used for inpaint")
     return parser.parse_args()
 
-
+''' 指定された顔画像に対して、選択された疾患テンプレートに基づいて顔の形を歪ませる処理を実行'''
 def save_outputs(
     output_dir: Path,
     original: np.ndarray,
@@ -97,7 +99,7 @@ def save_outputs(
         save_image_unicode_safe(output_dir / "disease_edit_mask.png", disease_edit_mask)
     (output_dir / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
 
-
+'''複数の歪み強度で処理した結果を横に並べた画像を生成'''
 def render_severity_strip(output_paths: list[Path], save_path: Path) -> None:
     images: list[np.ndarray] = []
     for path in output_paths:
@@ -113,7 +115,7 @@ def render_severity_strip(output_paths: list[Path], save_path: Path) -> None:
         strip = cv2.hconcat(images)
         save_image_unicode_safe(save_path, strip)
 
-
+'''単一の歪み強度で顔変形処理を実行し、結果を保存する'''
 def run_single_case(image: np.ndarray, args: argparse.Namespace, severity_value: float, output_dir: Path) -> Path:
     template = get_template(args.disease)
     landmarks, detector_mode = detect_landmarks(image, args.face_landmarker_model)
@@ -187,7 +189,7 @@ def run_single_case(image: np.ndarray, args: argparse.Namespace, severity_value:
     )
     return output_dir / "final_output.png"
 
-
+'''コマンドライン引数を処理し、顔変形処理を実行して結果を保存するメイン関数'''
 def main() -> None:
     args = parse_args()
     image = load_image_unicode_safe(args.input)

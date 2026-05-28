@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import dataclass
 from pathlib import Path
 
 import cv2
@@ -9,6 +10,13 @@ import numpy as np
 
 
 DEFAULT_FACE_LANDMARKER_PATH = Path("models") / "face_landmarker.task"
+
+
+@dataclass(frozen=True)
+class FaceLandmarkResult:
+    landmarks_2d: np.ndarray
+    landmarks_3d: np.ndarray
+    detector_mode: str
 
 
 def load_image_unicode_safe(path: str) -> np.ndarray | None:
@@ -29,7 +37,7 @@ def save_image_unicode_safe(path: Path, image: np.ndarray) -> None:
     encoded.tofile(str(path))
 
 
-def detect_landmarks_with_tasks(image: np.ndarray, model_path: Path) -> np.ndarray:
+def detect_landmarks_with_tasks_3d(image: np.ndarray, model_path: Path) -> FaceLandmarkResult:
     base_options = mp.tasks.BaseOptions
     face_landmarker = mp.tasks.vision.FaceLandmarker
     face_landmarker_options = mp.tasks.vision.FaceLandmarkerOptions
@@ -49,17 +57,30 @@ def detect_landmarks_with_tasks(image: np.ndarray, model_path: Path) -> np.ndarr
         raise ValueError("No face detected by MediaPipe FaceLandmarker.")
 
     h, w = image.shape[:2]
-    coords: list[list[int]] = []
+    coords_2d: list[list[int]] = []
+    coords_3d: list[list[float]] = []
     for lm in result.face_landmarks[0]:
-        coords.append([int(round(lm.x * w)), int(round(lm.y * h))])
-    return np.array(coords, dtype=np.int32)
+        x_px = float(lm.x * w)
+        y_px = float(lm.y * h)
+        z_px = float(lm.z * w)
+        coords_2d.append([int(round(x_px)), int(round(y_px))])
+        coords_3d.append([x_px, y_px, z_px])
+    return FaceLandmarkResult(
+        landmarks_2d=np.array(coords_2d, dtype=np.int32),
+        landmarks_3d=np.array(coords_3d, dtype=np.float32),
+        detector_mode="mediapipe_tasks_face_landmarker_3d",
+    )
 
 
-def detect_landmarks(image: np.ndarray, face_landmarker_model: str) -> tuple[np.ndarray, str]:
+def detect_landmarks_with_tasks(image: np.ndarray, model_path: Path) -> np.ndarray:
+    return detect_landmarks_with_tasks_3d(image, model_path).landmarks_2d
+
+
+def detect_landmarks_3d(image: np.ndarray, face_landmarker_model: str) -> FaceLandmarkResult:
     model_path = Path(face_landmarker_model)
     if model_path.exists():
         try:
-            return detect_landmarks_with_tasks(image, model_path), "mediapipe_tasks_face_landmarker"
+            return detect_landmarks_with_tasks_3d(image, model_path)
         except Exception:
             pass
 
@@ -80,10 +101,24 @@ def detect_landmarks(image: np.ndarray, face_landmarker_model: str) -> tuple[np.
         raise ValueError("No face detected by MediaPipe FaceMesh.")
 
     h, w = image.shape[:2]
-    coords: list[list[int]] = []
+    coords_2d: list[list[int]] = []
+    coords_3d: list[list[float]] = []
     for lm in result.multi_face_landmarks[0].landmark:
-        coords.append([int(round(lm.x * w)), int(round(lm.y * h))])
-    return np.array(coords, dtype=np.int32), "mediapipe_facemesh"
+        x_px = float(lm.x * w)
+        y_px = float(lm.y * h)
+        z_px = float(lm.z * w)
+        coords_2d.append([int(round(x_px)), int(round(y_px))])
+        coords_3d.append([x_px, y_px, z_px])
+    return FaceLandmarkResult(
+        landmarks_2d=np.array(coords_2d, dtype=np.int32),
+        landmarks_3d=np.array(coords_3d, dtype=np.float32),
+        detector_mode="mediapipe_facemesh_3d",
+    )
+
+
+def detect_landmarks(image: np.ndarray, face_landmarker_model: str) -> tuple[np.ndarray, str]:
+    result = detect_landmarks_3d(image, face_landmarker_model)
+    return result.landmarks_2d, result.detector_mode.replace("_3d", "")
 
 
 def parse_severity_values(args: argparse.Namespace) -> list[float]:

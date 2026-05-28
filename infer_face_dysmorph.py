@@ -13,7 +13,7 @@ import numpy as np
 from disease_templates import SUPPORTED_DISEASE_CHOICES, get_template
 from utils.face_landmarks import (
     DEFAULT_FACE_LANDMARKER_PATH,
-    detect_landmarks,
+    detect_landmarks_3d,
     load_image_unicode_safe,
     parse_severity_values,
     save_image_unicode_safe,
@@ -23,6 +23,7 @@ from utils.face_refine import (
     DEFAULT_SD_NEGATIVE_PROMPT,
     refine_face_with_sd_local_edit,
 )
+from utils.face_shading import apply_pseudo_3d_simulation, render_pseudo_3d_relief_preview
 from utils.face_warp import (
     blend_with_original,
     build_delta_heatmap,
@@ -66,6 +67,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--sd-negative-prompt", default=DEFAULT_SD_NEGATIVE_PROMPT, help="Negative prompt for inpaint")
     parser.add_argument("--sd-render-main", action="store_true", help="Blend original context outside the edit mask before inpaint")
     parser.add_argument("--sd-roi-pad-ratio", type=float, default=0.16, help="Padding ratio around the disease mask crop used for inpaint")
+    parser.add_argument(
+        "--pseudo3d-strength",
+        type=float,
+        default=1.0,
+        help="Pseudo-3D shading/relief strength. Use 2.0-3.0 for visible research inspection.",
+    )
     return parser.parse_args()
 
 
@@ -73,8 +80,14 @@ def save_outputs(
     output_dir: Path,
     original: np.ndarray,
     warped_full: np.ndarray,
+    shaded_warped_full: np.ndarray,
     final_output: np.ndarray,
     mask: np.ndarray,
+    weight_map: np.ndarray,
+    shading_map: np.ndarray,
+    pseudo_depth_map: np.ndarray,
+    pseudo_highlight_map: np.ndarray,
+    pseudo3d_relief_preview: np.ndarray,
     landmarks_debug: np.ndarray,
     heatmap: np.ndarray,
     condition_crop: np.ndarray | None,
@@ -85,8 +98,14 @@ def save_outputs(
     output_dir.mkdir(parents=True, exist_ok=True)
     save_image_unicode_safe(output_dir / "input.png", original)
     save_image_unicode_safe(output_dir / "warped_full.png", warped_full)
+    save_image_unicode_safe(output_dir / "shaded_warped_full.png", shaded_warped_full)
     save_image_unicode_safe(output_dir / "final_output.png", final_output)
     save_image_unicode_safe(output_dir / "lower_face_mask.png", mask)
+    save_image_unicode_safe(output_dir / "deformation_weight_map.png", weight_map)
+    save_image_unicode_safe(output_dir / "shading_map.png", shading_map)
+    save_image_unicode_safe(output_dir / "pseudo_depth_map.png", pseudo_depth_map)
+    save_image_unicode_safe(output_dir / "pseudo_highlight_map.png", pseudo_highlight_map)
+    save_image_unicode_safe(output_dir / "pseudo3d_relief_preview.png", pseudo3d_relief_preview)
     save_image_unicode_safe(output_dir / "landmarks_debug.png", landmarks_debug)
     save_image_unicode_safe(output_dir / "delta_heatmap.png", heatmap)
     if condition_crop is not None:
@@ -116,13 +135,17 @@ def render_severity_strip(output_paths: list[Path], save_path: Path) -> None:
 
 def run_single_case(image: np.ndarray, args: argparse.Namespace, severity_value: float, output_dir: Path) -> Path:
     template = get_template(args.disease)
-    landmarks, detector_mode = detect_landmarks(image, args.face_landmarker_model)
+    landmark_result = detect_landmarks_3d(image, args.face_landmarker_model)
+    landmarks = landmark_result.landmarks_2d
+    landmarks_3d = landmark_result.landmarks_3d
+    detector_mode = landmark_result.detector_mode
     template_result = template.build(
         image_shape=image.shape,
         landmarks=landmarks,
         severity=severity_value,
         feather=args.feather,
     )
+    deformation_weight_map = template_result.weight_map if template_result.weight_map is not None else template_result.mask
 
     disp_x, disp_y = build_dense_displacement(
         image_shape=image.shape,
@@ -130,9 +153,25 @@ def run_single_case(image: np.ndarray, args: argparse.Namespace, severity_value:
         dst_points=template_result.dst_points,
         sigma=args.warp_sigma,
         mask=template_result.mask,
+        weight_map=deformation_weight_map,
     )
     warped_full = remap_image(image, disp_x, disp_y)
-    refined_full = warped_full
+    shaded_warped_full, shading_map, pseudo_depth_map, pseudo_highlight_map = apply_pseudo_3d_simulation(
+        warped_full,
+        landmarks,
+        template_result.canonical_name,
+        severity_value,
+        template_result.mask,
+        strength=args.pseudo3d_strength,
+        landmarks_3d=landmarks_3d,
+    )
+    pseudo3d_relief_preview = render_pseudo_3d_relief_preview(
+        shaded_warped_full,
+        pseudo_depth_map,
+        template_result.mask,
+        strength=args.pseudo3d_strength,
+    )
+    refined_full = shaded_warped_full
     sd_meta: dict[str, object] = {"enabled": False}
     condition_crop: np.ndarray | None = None
     refined_crop: np.ndarray | None = None
@@ -140,7 +179,7 @@ def run_single_case(image: np.ndarray, args: argparse.Namespace, severity_value:
     if args.enable_sd_refine:
         refined_full, sd_meta, condition_crop, refined_crop, disease_edit_mask = refine_face_with_sd_local_edit(
             original_image=image,
-            geometric_image=warped_full,
+            geometric_image=shaded_warped_full,
             landmarks=landmarks,
             disease_mask=template_result.mask,
             disease=template_result.canonical_name,
@@ -156,6 +195,8 @@ def run_single_case(image: np.ndarray, args: argparse.Namespace, severity_value:
         args.debug_arrows,
     )
     heatmap = build_delta_heatmap(disp_x, disp_y)
+    z_values = landmarks_3d[:, 2].astype(np.float32)
+    chin_z = z_values[[idx for idx in [152, 377, 400, 378, 379] if idx < len(z_values)]]
 
     summary = {
         "input": str(Path(args.input).resolve()),
@@ -167,6 +208,19 @@ def run_single_case(image: np.ndarray, args: argparse.Namespace, severity_value:
         "feather": int(args.feather),
         "control_points": int(template_result.src_points.shape[0]),
         "mask_pixels": int(cv2.countNonZero(template_result.mask)),
+        "weight_map_mean": float(np.mean(deformation_weight_map) / 255.0),
+        "weight_map_max": float(np.max(deformation_weight_map) / 255.0),
+        "shading_map_mean": float(np.mean(shading_map) / 255.0),
+        "shading_map_max": float(np.max(shading_map) / 255.0),
+        "pseudo_depth_mean": float(np.mean(pseudo_depth_map) / 255.0),
+        "pseudo_depth_max": float(np.max(pseudo_depth_map) / 255.0),
+        "pseudo_highlight_mean": float(np.mean(pseudo_highlight_map) / 255.0),
+        "pseudo_highlight_max": float(np.max(pseudo_highlight_map) / 255.0),
+        "pseudo3d_strength": float(args.pseudo3d_strength),
+        "mediapipe_z_min": float(np.min(z_values)),
+        "mediapipe_z_max": float(np.max(z_values)),
+        "mediapipe_z_range": float(np.max(z_values) - np.min(z_values)),
+        "mediapipe_chin_z_mean": float(np.mean(chin_z)) if chin_z.size else 0.0,
         "delta_abs_mean": float(np.mean(np.abs(disp_x)) + np.mean(np.abs(disp_y))),
         "delta_abs_max": float(max(np.max(np.abs(disp_x)), np.max(np.abs(disp_y)))),
         "sd_refine": sd_meta,
@@ -177,8 +231,14 @@ def run_single_case(image: np.ndarray, args: argparse.Namespace, severity_value:
         output_dir=output_dir,
         original=image,
         warped_full=warped_full,
+        shaded_warped_full=shaded_warped_full,
         final_output=final_output,
         mask=template_result.mask,
+        weight_map=deformation_weight_map,
+        shading_map=shading_map,
+        pseudo_depth_map=pseudo_depth_map,
+        pseudo_highlight_map=pseudo_highlight_map,
+        pseudo3d_relief_preview=pseudo3d_relief_preview,
         landmarks_debug=landmarks_debug,
         heatmap=heatmap,
         condition_crop=condition_crop,
