@@ -1,0 +1,18 @@
+{
+  "input": "C:\\Users\\LIU\\Downloads\\卒業研究1\\data\\inputs_normal\\ffhq_subset\\00001.png",
+  "detector_mode": "mediapipe_tasks_face_landmarker_3d",
+  "disease": "mandibular_protrusion",
+  "severity": 1.2,
+  "focal_scale": 2.4,
+  "z_scale": 1.45,
+  "projection_scale": 1.0,
+  "num_triangles": 910,
+  "panel": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs\\mandibular_protrusion_template_improved\\projection_s120\\projection_panel.png",
+  "renders": {
+    "front": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs\\mandibular_protrusion_template_improved\\projection_s120\\front.png",
+    "oblique_left": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs\\mandibular_protrusion_template_improved\\projection_s120\\oblique_left.png",
+    "oblique_right": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs\\mandibular_protrusion_template_improved\\projection_s120\\oblique_right.png",
+    "side_left": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs\\mandibular_protrusion_template_improved\\projection_s120\\side_left.png",
+    "side_right": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs\\mandibular_protrusion_template_improved\\projection_s120\\side_right.png"
+  }
+}

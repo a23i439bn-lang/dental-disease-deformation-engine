@@ -1,0 +1,30 @@
+{
+  "input": "C:\\Users\\LIU\\Downloads\\卒業研究1\\data\\inputs_normal\\ffhq_subset\\00001.png",
+  "detector_mode": "mediapipe_tasks_face_landmarker_3d",
+  "disease": "mandibular_protrusion",
+  "requested_disease": "mandibular_protrusion",
+  "severity": 0.2,
+  "warp_sigma": 52.0,
+  "feather": 21,
+  "control_points": 69,
+  "mask_pixels": 17999,
+  "weight_map_mean": 0.16499286726409312,
+  "weight_map_max": 0.8980392156862745,
+  "shading_map_mean": 0.004812562231924019,
+  "shading_map_max": 0.19215686274509805,
+  "pseudo_depth_mean": 0.005909040862438725,
+  "pseudo_depth_max": 0.23137254901960785,
+  "pseudo_highlight_mean": 0.0016983929802389707,
+  "pseudo_highlight_max": 0.07058823529411765,
+  "pseudo3d_strength": 1.4,
+  "mediapipe_z_min": -39.56814956665039,
+  "mediapipe_z_max": 59.84931945800781,
+  "mediapipe_z_range": 99.41746520996094,
+  "mediapipe_chin_z_mean": 20.33940887451172,
+  "delta_abs_mean": 0.4896164834499359,
+  "delta_abs_max": 3.058276414871216,
+  "sd_refine": {
+    "enabled": false
+  },
+  "output_image": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs\\mandibular_protrusion_template_improved\\severity_0_20\\final_output.png"
+}

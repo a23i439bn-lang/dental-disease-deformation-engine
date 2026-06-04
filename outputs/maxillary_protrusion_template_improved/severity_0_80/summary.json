@@ -1,0 +1,30 @@
+{
+  "input": "C:\\Users\\LIU\\Downloads\\卒業研究1\\data\\inputs_normal\\ffhq_subset\\00001.png",
+  "detector_mode": "mediapipe_tasks_face_landmarker_3d",
+  "disease": "maxillary_protrusion",
+  "requested_disease": "maxillary_protrusion",
+  "severity": 0.8,
+  "warp_sigma": 52.0,
+  "feather": 21,
+  "control_points": 90,
+  "mask_pixels": 19110,
+  "weight_map_mean": 0.06984139236749387,
+  "weight_map_max": 0.7764705882352941,
+  "shading_map_mean": 0.004252175723805147,
+  "shading_map_max": 0.22745098039215686,
+  "pseudo_depth_mean": 0.012207809149050244,
+  "pseudo_depth_max": 0.4,
+  "pseudo_highlight_mean": 0.004413440180759804,
+  "pseudo_highlight_max": 0.1411764705882353,
+  "pseudo3d_strength": 1.4,
+  "mediapipe_z_min": -39.56814956665039,
+  "mediapipe_z_max": 59.84931945800781,
+  "mediapipe_z_range": 99.41746520996094,
+  "mediapipe_chin_z_mean": 20.33940887451172,
+  "delta_abs_mean": 0.1719561219215393,
+  "delta_abs_max": 1.2988264560699463,
+  "sd_refine": {
+    "enabled": false
+  },
+  "output_image": "C:\\Users\\LIU\\Downloads\\卒業研究1\\outputs\\maxillary_protrusion_template_improved\\severity_0_80\\final_output.png"
+}

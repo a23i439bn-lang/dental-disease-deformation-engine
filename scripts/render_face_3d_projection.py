@@ -110,13 +110,16 @@ def apply_disease_z_transform(target: np.ndarray, landmarks_2d: np.ndarray, dise
     sev = float(np.clip(severity, 0.0, 1.5))
 
     if disease == "mandibular_protrusion":
-        add_forward(out, CHIN_IDX, fw * (0.050 + 0.085 * sev))
-        add_forward(out, LOWER_LIP_IDX, fw * (0.030 + 0.050 * sev))
-        add_forward(out, LEFT_LOWER_JAW_IDX + RIGHT_LOWER_JAW_IDX, fw * (0.016 + 0.032 * sev))
+        add_forward(out, CHIN_IDX, fw * (0.060 + 0.095 * sev))
+        add_forward(out, LEFT_LOWER_JAW_IDX + RIGHT_LOWER_JAW_IDX, fw * (0.032 + 0.058 * sev))
+        add_forward(out, LOWER_LIP_IDX, fw * (0.032 + 0.052 * sev))
+        add_forward(out, [17, 18, 200, 199, 175, 152], fw * (0.038 + 0.062 * sev))
     elif disease == "maxillary_protrusion":
-        add_forward(out, UPPER_LIP_IDX, fw * (0.052 + 0.090 * sev))
-        add_forward(out, NOSE_BASE_IDX, fw * (0.016 + 0.030 * sev))
-        add_backward(out, CHIN_IDX, fw * (0.018 + 0.040 * sev))
+        add_forward(out, UPPER_LIP_IDX, fw * (0.046 + 0.078 * sev))
+        add_forward(out, MOUTH_OUTER_IDX, fw * (0.026 + 0.048 * sev))
+        add_forward(out, NOSE_BASE_IDX, fw * (0.014 + 0.026 * sev))
+        add_backward(out, CHIN_IDX, fw * (0.022 + 0.044 * sev))
+        add_backward(out, LEFT_LOWER_JAW_IDX + RIGHT_LOWER_JAW_IDX, fw * (0.008 + 0.020 * sev))
     elif disease.startswith("chin_deviation"):
         deviates_left = disease.endswith("_left")
         strong = LEFT_LOWER_JAW_IDX + LEFT_CHIN_SIDE_IDX if deviates_left else RIGHT_LOWER_JAW_IDX + RIGHT_CHIN_SIDE_IDX
