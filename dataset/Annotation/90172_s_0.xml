@@ -1,0 +1,26 @@
+<annotation>
+	<folder>Image</folder>
+	<filename>90172_s_0.JPG</filename>
+	<path>C:\Users\SHI-PC\Desktop\labelImg-master_test\data\Image\90172_s_0.JPG</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>786</width>
+		<height>1179</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>4 Facial profile	4 Straight type profile</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>337</xmin>
+			<ymin>221</ymin>
+			<xmax>723</xmax>
+			<ymax>1157</ymax>
+		</bndbox>
+	</object>
+</annotation>

@@ -1,0 +1,38 @@
+<annotation>
+	<folder>Image</folder>
+	<filename>29459_f_0.JPG</filename>
+	<path>C:\Users\SHI-PC\Desktop\labelImg-master_test\data\Image\29459_f_0.JPG</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>807</width>
+		<height>1076</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>6 Lateral deviation of a chin	1 No evaluation</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>47</xmin>
+			<ymin>63</ymin>
+			<xmax>776</xmax>
+			<ymax>1069</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>"	3 Length between the pupils is longer</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>68</xmin>
+			<ymin>353</ymin>
+			<xmax>728</xmax>
+			<ymax>550</ymax>
+		</bndbox>
+	</object>
+</annotation>

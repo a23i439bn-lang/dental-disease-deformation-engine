@@ -1,0 +1,38 @@
+<annotation>
+	<folder>Image</folder>
+	<filename>70710_f_0.JPG</filename>
+	<path>C:\Users\SHI-PC\Desktop\labelImg-master_test\data\Image\70710_f_0.JPG</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>1041</width>
+		<height>1388</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>7 Inclination of a mouth	4 The left conor of the mouth is located in a higher vertical position than the right.</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>316</xmin>
+			<ymin>820</ymin>
+			<xmax>784</xmax>
+			<ymax>1103</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>1 Upper, middle, and lower facial height 	4 Greater lower facial height</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>88</xmin>
+			<ymin>60</ymin>
+			<xmax>990</xmax>
+			<ymax>1333</ymax>
+		</bndbox>
+	</object>
+</annotation>

@@ -1,0 +1,86 @@
+<annotation>
+	<folder>Image</folder>
+	<filename>109366_s_0.JPG</filename>
+	<path>C:\Users\SHI-PC\Desktop\labelImg-master_test\data\Image\109366_s_0.JPG</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>662</width>
+		<height>993</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>4 Facial profile	3 Concave type profile</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>230</xmin>
+			<ymin>205</ymin>
+			<xmax>630</xmax>
+			<ymax>987</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>2 vertical position of mouth	4 Greater mandibular height</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>115</xmin>
+			<ymin>208</ymin>
+			<xmax>594</xmax>
+			<ymax>990</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>5 Nasolabial angle	3 Smaller nasolabial angle</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>398</xmin>
+			<ymin>532</ymin>
+			<xmax>600</xmax>
+			<ymax>766</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>9 Anteroposterior position of a chin	3 Protruding chin</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>180</xmin>
+			<ymin>580</ymin>
+			<xmax>608</xmax>
+			<ymax>979</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>10 Protrusion and retrusion of lips	6 Retruding lower lip</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>304</xmin>
+			<ymin>604</ymin>
+			<xmax>558</xmax>
+			<ymax>870</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>8 Lip incompetency	3 Lip incompetent</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>349</xmin>
+			<ymin>579</ymin>
+			<xmax>546</xmax>
+			<ymax>955</ymax>
+		</bndbox>
+	</object>
+</annotation>

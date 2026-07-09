@@ -68,7 +68,7 @@ DEFAULT_SD_NEGATIVE_PROMPT = (
     "cartoon, illustration, painting, cgi, 3d render, stylized, altered identity, different person"
 )
 
-
+''' 指定された顔画像に対して、選択された疾患テンプレートに基づいて顔の形を歪ませる処理を実行するためのコマンドライン引数を定義する関数 '''
 def normalize_template_disease_name(name: str) -> str:
     normalized = name.strip().lower().replace(" ", "_")
     alias_map = {
@@ -87,7 +87,7 @@ def normalize_template_disease_name(name: str) -> str:
         raise KeyError(f"Unsupported disease template: {name}. Available: {available}")
     return alias_map[normalized]
 
-
+'''複数の歪み強度で処理した結果を横に並べた画像を生成する関数 '''
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Mouth-only geometric disease template inference.")
     parser.add_argument("--input", required=True, help="Input face image path")
@@ -123,7 +123,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--sd-render-main", action="store_true", help="Treat the geometric output as a condition image and let inpaint do the final rendering")
     return parser.parse_args()
 
-
+'''単一の歪み強度で顔変形処理を実行し、結果を保存する関数'''
 def heuristic_landmarks(image: np.ndarray) -> np.ndarray:
     h, w = image.shape[:2]
     face_x = int(w * 0.18)
@@ -143,7 +143,8 @@ def heuristic_landmarks(image: np.ndarray) -> np.ndarray:
         landmarks[idx] = np.round(point).astype(np.int32)
     return landmarks
 
-
+'''あらかじめ用意した型に合わせて顔の形を歪ませる処理と、
+お好みで画像生成AI（Stable Diffusion）を使ってキレイに仕上げるための実行プログラム'''
 def detect_landmarks_with_tasks(image: np.ndarray, model_path: Path) -> np.ndarray:
     BaseOptions = mp.tasks.BaseOptions
     FaceLandmarker = mp.tasks.vision.FaceLandmarker
@@ -169,7 +170,7 @@ def detect_landmarks_with_tasks(image: np.ndarray, model_path: Path) -> np.ndarr
         coords.append([int(round(lm.x * w)), int(round(lm.y * h))])
     return np.array(coords, dtype=np.int32)
 
-
+'''コマンドライン引数を処理し、顔変形処理を実行して結果を保存するメイン関数'''
 def load_image_unicode_safe(path: str) -> np.ndarray | None:
     image_path = Path(path)
     if not image_path.exists():
@@ -179,7 +180,7 @@ def load_image_unicode_safe(path: str) -> np.ndarray | None:
         return None
     return cv2.imdecode(binary, cv2.IMREAD_COLOR)
 
-
+'''コマンドライン引数を処理し、顔変形処理を実行して結果を保存するメイン関数'''
 def detect_landmarks(image: np.ndarray, face_landmarker_model: str) -> tuple[np.ndarray, str]:
     model_path = Path(face_landmarker_model)
     if model_path.exists():
@@ -210,7 +211,7 @@ def detect_landmarks(image: np.ndarray, face_landmarker_model: str) -> tuple[np.
         coords.append([int(round(lm.x * w)), int(round(lm.y * h))])
     return np.array(coords, dtype=np.int32), "mediapipe_facemesh"
 
-
+'''複数の歪み強度で処理した結果を横に並べた画像を生成する関数'''
 def extract_mouth_roi(image: np.ndarray, landmarks: np.ndarray, margin: int = 20) -> tuple[np.ndarray, tuple[int, int, int, int]]:
     mouth_pts = landmarks[MOUTH_IDX]
 
@@ -226,6 +227,7 @@ def extract_mouth_roi(image: np.ndarray, landmarks: np.ndarray, margin: int = 20
     return roi, (x_min, y_min, x_max, y_max)
 
 
+'''複数の歪み強度で処理した結果を横に並べた画像を生成する関数'''
 def build_polygon_mask(shape: tuple[int, int], points: np.ndarray) -> np.ndarray:
     mask = np.zeros(shape, dtype=np.uint8)
     if len(points) >= 3:

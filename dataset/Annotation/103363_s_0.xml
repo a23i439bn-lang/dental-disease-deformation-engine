@@ -1,0 +1,62 @@
+<annotation>
+	<folder>Image</folder>
+	<filename>103363_s_0.jpg</filename>
+	<path>C:\Users\SHI-PC\Desktop\labelImg-master_test\data\Image\103363_s_0.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>686</width>
+		<height>1029</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>4 Facial profile	3 Concave type profile</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>343</xmin>
+			<ymin>171</ymin>
+			<xmax>644</xmax>
+			<ymax>1006</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>9 Anteroposterior position of a chin	3 Protruding chin</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>239</xmin>
+			<ymin>490</ymin>
+			<xmax>652</xmax>
+			<ymax>1005</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>10 Protrusion and retrusion of lips	6 Retruding lower lip</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>248</xmin>
+			<ymin>548</ymin>
+			<xmax>645</xmax>
+			<ymax>873</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>5 Nasolabial angle	3 Smaller nasolabial angle</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>439</xmin>
+			<ymin>560</ymin>
+			<xmax>637</xmax>
+			<ymax>756</ymax>
+		</bndbox>
+	</object>
+</annotation>

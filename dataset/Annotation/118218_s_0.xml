@@ -1,0 +1,50 @@
+<annotation>
+	<folder>Image</folder>
+	<filename>118218_s_0.JPG</filename>
+	<path>C:\Users\SHI-PC\Desktop\labelImg-master_test\data\Image\118218_s_0.JPG</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>692</width>
+		<height>1038</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>1 Upper, middle, and lower facial height 	3 Normal facial height</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>169</xmin>
+			<ymin>24</ymin>
+			<xmax>623</xmax>
+			<ymax>1021</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>4 Facial profile	5 Convex type profile</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>219</xmin>
+			<ymin>92</ymin>
+			<xmax>603</xmax>
+			<ymax>1016</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>8 Lip incompetency	1 No evaluation</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>357</xmin>
+			<ymin>609</ymin>
+			<xmax>609</xmax>
+			<ymax>988</ymax>
+		</bndbox>
+	</object>
+</annotation>

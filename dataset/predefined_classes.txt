@@ -1,0 +1,161 @@
+1 Upper, middle, and lower facial height 	1 No evaluation
+1 Upper, middle, and lower facial height 	2 Other
+1 Upper, middle, and lower facial height 	3 Normal facial height
+1 Upper, middle, and lower facial height 	4 Greater lower facial height
+1 Upper, middle, and lower facial height 	5 Smaller lower facial height
+2 vertical position of mouth	1 No evaluation
+2 vertical position of mouth	2 Other
+2 vertical position of mouth	3 Smaller mandibular height
+2 vertical position of mouth	4 Greater mandibular height
+2 Vertical position of mouth 	5 Normal mandibular height
+3 Facial assymmetry	1 No evaluation
+3 Facial assymmetry	2 Other
+3 Facial assymmetry	3 Almost symmetric face
+3 Facial assymmetry	4 Symmetric face
+3 Facial assymmetry	5 Assymmetric face
+4 Facial profile	1 No evaluation
+4 Facial profile	2 Other
+4 Facial profile	3 Concave type profile
+4 Facial profile	4 Straight type profile
+4 Facial profile	5 Convex type profile
+5 Nasolabial angle	1 No evaluation
+5 Nasolabial angle	2 Other
+5 Nasolabial angle	3 Smaller nasolabial angle
+5 Nasolabial angle	4 Normal nasolabial angle
+5 Nasolabial angle	5 Greater nasolabial angle
+6 Lateral deviation of a chin	1 No evaluation
+6 Lateral deviation of a chin	2 Other
+6 Lateral deviation of a chin	3 Significant chin deviation to the left
+6 Lateral deviation of a chin	4 Mild chin deviation to the left
+6 Lateral deviation of a chin	5 Significant chin deviation to the right
+6 Lateral deviation of a chin	6 Mild chin deviation to the right
+7 Inclination of a mouth	1 No evaluation
+7 Inclination of a mouth	2 Other
+7 Inclination of a mouth	3 The right conor of the mouth is located in a higher vertical position than the left.
+7 Inclination of a mouth	4 The left conor of the mouth is located in a higher vertical position than the right.
+7 Inclination of a mouth	5 Both conors of the mouth are in same vertical position.
+7 Inclination of a mouth	6 Both conors of the mouth are located in lower vertical positions than the normal.
+8 Lip incompetency	1 No evaluation
+8 Lip incompetency	2 Other
+8 Lip incompetency	3 Lip incompetent
+8 Lip incompetency	4 Lip competent
+9 Anteroposterior position of a chin	1 No evaluation
+9 Anteroposterior position of a chin	2 Other
+9 Anteroposterior position of a chin	3 Protruding chin
+9 Anteroposterior position of a chin	4 Retruding chin
+10 Protrusion and retrusion of lips	1 No evaluation
+10 Protrusion and retrusion of lips	2  Other
+10 Protrusion and retrusion of lips	3 Protruding lips
+10 Protrusion and retrusion of lips	4 Rretruding lips
+10 Protrusion and retrusion of lips	5 Protruding upper lip
+10 Protrusion and retrusion of lips	6 Retruding lower lip
+10 Protrusion and retrusion of lips	7 Protruding lower lip
+10 Protrusion and retrusion of lips	8 Retruding lower lip
+11 Mandubular angle	1 No evaluation
+11 Mandubular angle	2 Other
+11 Mandubular angle	3 Both manbibular angles are smaller than the normal.
+11 Mandubular angle	4 The right mandibular angle is  greater than the left.
+11 Mandubular angle	5 The left mandibular angle is greater than the right.
+12 Vertical eyeposition	1 No evaluation
+12 Vertical eyeposition	2 Other
+12 Vertical eyeposition	3 The left eye is located higher in vertical than the left.
+12 Vertical eyeposition	4 The left eye is located higher in vertical than the right.
+13 Scars	1 No evaluation
+13 Scars	2 Other
+13 Scars	3 Scar on left side of the upper lip
+13 Scars	4 Scar on right side of the upper lip
+13 Scars	5 Scars of left and right side of the upper lip
+14 Flat alars	1 No evaluation
+14 Flat alars	2 Other
+14 Flat alars	3 Flat left nasal alar
+14 Flat alars	4 Flat right nasal alar
+14 Flat alars	5 Asymmetric nasal alars
+15 Labiomental sulcus	1 No evaluation
+15 Labiomental sulcus	2 Other
+15 Labiomental sulcus	3 Shallow labiomental sulcus
+15 Labiomental sulcus	4 Deep labiomental sulcus
+15 Labiomental sulcus	5 Normal labiomental sulcus
+16 Vertical position of the alar base	1 No evaluation
+16 Vertical position of the alar base	2 Other
+16 Vertical position of the alar base	3 The right alar base is located higher position in vertical than the left.
+16 Vertical position of the alar base	4 The left alar base is located higher position in vertical than the right.
+17 Inclination of the pupil	1 No evaluation
+17 Inclination of the pupil	2 Other
+17 Inclination of the pupil	3 Drooping eyes
+17 Inclination of the pupil	4 Slant-eyes
+17 Inclination of the pupil	5 Drooped left eye
+17 Inclination of the pupil	6 Drooped right eye
+18 Lip thickness	1 No evaluation
+18 Lip thickness	2 Other
+18 Lip thickness	3 Thick lips
+18 Lip thickness	4 Thin lips
+18 Lip thickness	5 The patient's upper lip is thin and lower lip is thick.
+18 Lip thickness	6 The patient's upper lip is thick and lower lip is thin.
+18 Lip thickness	7 Thick upper lip
+18 Lip thickness	8 Thin upper lip
+18 Lip thickness	9 Thick lower lip
+18 Lip thickness	10 Thin lower lip
+19 Lip trap	1 No evaluation
+19 Lip trap	2 Other
+19 Lip trap	3 Lip trap
+20 Size and vertical height of the nose	1 No evaluation
+20 Size and vertical height of the nose	2 Other
+20 Size and vertical height of the nose	3 Large nose
+20 Size and vertical height of the nose	4 High nasal bridge
+20 Size and vertical height of the nose	5 Low nasal bridge
+21 Width of mouth 	1 No evaluation
+21 Width of mouth 	2 Other
+21 Width of mouth 	3 The right half of the mouth is larger than the left.
+21 Width of mouth 	4 The left half of the mouth is larger than the right.
+22 Vertical orientation of nose tip	1 No evaluation
+22 Vertical orientation of nose tip	2 Other
+22 Vertical orientation of nose tip	3 The nose is tipped to up.
+22 Vertical orientation of nose tip	4 The nose is tipped to down.
+23 Throat length	1 No evaluation
+23 Throat length	2 Other
+23 Throat length	3 Short throat length
+23 Throat length	4 Llong throat length
+24 Distance between the pupils	1 No evaluation
+24 Distance between the pupils	2 Other
+24 Distance between the pupils	3 Length between the pupils is longer
+25 Saddle nose	1 No evaluation
+25 Saddle nose	2 Other
+25 Saddle nose	3 Saddle nose
+26 Philtrum	1 No evaluation
+26 Philtrum	2 Other
+26 Philtrum	3 Deep philtrum
+27 Heights of the eyes	1 No evaluation
+27 Heights of the eyes	2 Other
+27 Heights of the eyes	3 The right eye is larger in height.
+27 Heights of the eyes	4 The lefteye is larger in height.
+28 Lateral deviation of nose tip	1 No evaluation
+28 Lateral deviation of nose tip	2 Other
+28 Lateral deviation of nose tip	3 Nose tip deviation to the left
+28 Lateral deviation of nose tip	4 Nose tip deviation to the right
+28 Lateral deviation of nose tip	5 No nose tip deviation
+29 Width of right half and left half of the face	1 No evaluation
+29 Width of right half and left half of the face	2 Other
+29 Width of right half and left half of the face	3 The right half of the face is larger in width.
+29 Width of right half and left half of the face	4 The left half of the face is larger in width.
+30 Eyeblow	1 No evaluation
+30 Eyeblow	2 Other
+30 Eyeblow	3 Long and hairly eyeblows
+31 Forehead protrusion	1 No evaluation
+31 Forehead protrusion	2 Other
+31 Forehead protrusion	3 Protruding forehead
+31 Forehead protrusion	4 Retruding forehead
+32 Midfacial protrusion and retrusion	1 No evaluation
+32 Midfacial protrusion and retrusion	2 Other
+32 Midfacial protrusion and retrusion	3 Retruding midface
+32 Midfacial protrusion and retrusion	4 Protruding midface
+33 Vertical positon of the mandibular angles	1 No evaluation
+33 Vertical positon of the mandibular angles	2 Other
+33 Vertical positon of the mandibular angles	3 The left manbibular angle is higher than the right.
+33 Vertical positon of the mandibular angles	4 The right mandibular angle is higher than the left.
+34 Cupid's bow	1 No evaluation
+34 Cupid's bow	2 Other
+34 Cupid's bow	3 The left end of the cupit bow is located higher in vertical position than the right end.
+34 Cupid's bow	4 The right end of the  cupid's bow is located higher in a vertical position  than the left end.
+35 Mental protuberance	1 No evaluation
+35 Mental protuberance	2 Other
+35 Mental protuberance	3 Prominent mental protuberance

@@ -1,0 +1,26 @@
+<annotation>
+	<folder>Image</folder>
+	<filename>43322_s_0.JPG</filename>
+	<path>C:\Users\SHI-PC\Desktop\labelImg-master_test\data\Image\43322_s_0.JPG</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>718</width>
+		<height>1077</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>4 Facial profile	4 Straight type profile</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>268</xmin>
+			<ymin>230</ymin>
+			<xmax>620</xmax>
+			<ymax>1034</ymax>
+		</bndbox>
+	</object>
+</annotation>

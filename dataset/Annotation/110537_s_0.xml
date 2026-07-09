@@ -1,0 +1,26 @@
+<annotation>
+	<folder>Image</folder>
+	<filename>110537_s_0.jpg</filename>
+	<path>C:\Users\SHI-PC\Desktop\labelImg-master_test\data\Image\110537_s_0.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>926</width>
+		<height>1389</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>4 Facial profile	4 Straight type profile</name>
+		<pose>Unspecified</pose>
+		<truncated>1</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>388</xmin>
+			<ymin>412</ymin>
+			<xmax>806</xmax>
+			<ymax>1389</ymax>
+		</bndbox>
+	</object>
+</annotation>

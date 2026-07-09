@@ -1,0 +1,38 @@
+<annotation>
+	<folder>Image</folder>
+	<filename>77406_f_0.JPG</filename>
+	<path>C:\Users\SHI-PC\Desktop\labelImg-master_test\data\Image\77406_f_0.JPG</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>891</width>
+		<height>1188</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>3 Facial assymmetry	5 Assymmetric face</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>55</xmin>
+			<ymin>158</ymin>
+			<xmax>856</xmax>
+			<ymax>1070</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>11 Mandubular angle	4 The right mandibular angle is	greater than the left.</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>91</xmin>
+			<ymin>643</ymin>
+			<xmax>866</xmax>
+			<ymax>1105</ymax>
+		</bndbox>
+	</object>
+</annotation>

@@ -1,0 +1,26 @@
+<annotation>
+	<folder>Image</folder>
+	<filename>72898_s_0.JPG</filename>
+	<path>C:\Users\SHI-PC\Desktop\labelImg-master_test\data\Image\72898_s_0.JPG</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>722</width>
+		<height>1083</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>4 Facial profile	4 Straight type profile</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>347</xmin>
+			<ymin>202</ymin>
+			<xmax>690</xmax>
+			<ymax>1030</ymax>
+		</bndbox>
+	</object>
+</annotation>

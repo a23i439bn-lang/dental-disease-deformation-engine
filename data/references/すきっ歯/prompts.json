@@ -1,6 +1,0 @@
-{
-  "baseline_prompt": "Photorealistic clinical dental photography of healthy teeth with normal spacing.",
-  "mild": "Photorealistic clinical dental photography of mild diastema, small visible gap between front teeth.",
-  "moderate": "Photorealistic clinical dental photography of moderate diastema, clear spacing between front teeth.",
-  "severe": "Photorealistic clinical dental photography of severe diastema, large visible gap between front teeth with realistic dental anatomy."
-}

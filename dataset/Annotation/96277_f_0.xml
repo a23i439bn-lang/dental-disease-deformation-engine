@@ -1,0 +1,38 @@
+<annotation>
+	<folder>Image</folder>
+	<filename>96277_f_0.JPG</filename>
+	<path>C:\Users\SHI-PC\Desktop\labelImg-master_test\data\Image\96277_f_0.JPG</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>759</width>
+		<height>1012</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>3 Facial assymmetry	5 Assymmetric face</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>68</xmin>
+			<ymin>107</ymin>
+			<xmax>713</xmax>
+			<ymax>904</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>11 Mandubular angle	5 The left mandibular angle is greater than the right.</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>54</xmin>
+			<ymin>512</ymin>
+			<xmax>714</xmax>
+			<ymax>909</ymax>
+		</bndbox>
+	</object>
+</annotation>

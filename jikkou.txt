@@ -1,0 +1,23 @@
+実行はシンプルです。VS Code のターミナルで、プロジェクトのルートに移動して次を実行します。
+python extract_landmarks.py
+このスクリプトは、デフォルトで次を見に行きます。
+入力画像: dataset/image/
+モデル: models/face_landmarker.task
+出力先: outputs/landmarks.csv
+失敗一覧: outputs/failed_images.csv
+手順
+VS Code でこのプロジェクトを開く
+ターミナルを開く
+必要なら仮想環境を有効化する
+python extract_landmarks.py を実行する
+仮想環境を使う場合
+.\.venv\Scripts\Activate.ps1
+python extract_landmarks.py
+うまくいかないときの確認
+models/face_landmarker.task が存在するか
+dataset/image/ に画像が入っているか
+mediapipe, opencv-python, numpy, pandas, tqdm が入っているか
+保存結果
+成功した画像の全ランドマーク: outputs/landmarks.csv
+顔検出できなかった画像: outputs/failed_images.csv
+必要なら次に、VS Code の launch.json 用の実行設定もそのまま作れます。

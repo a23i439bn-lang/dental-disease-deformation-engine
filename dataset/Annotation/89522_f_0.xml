@@ -1,0 +1,38 @@
+<annotation>
+	<folder>Image</folder>
+	<filename>89522_f_0.JPG</filename>
+	<path>C:\Users\SHI-PC\Desktop\labelImg-master_test\data\Image\89522_f_0.JPG</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>933</width>
+		<height>1244</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>13 Scars	5 Scars of left and right side of the upper lip</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>218</xmin>
+			<ymin>703</ymin>
+			<xmax>668</xmax>
+			<ymax>962</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>20 Size and vertical height of the nose	5 Low nasal bridge</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>320</xmin>
+			<ymin>379</ymin>
+			<xmax>606</xmax>
+			<ymax>793</ymax>
+		</bndbox>
+	</object>
+</annotation>

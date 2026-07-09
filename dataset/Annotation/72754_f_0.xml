@@ -1,0 +1,26 @@
+<annotation>
+	<folder>Image</folder>
+	<filename>72754_f_0.JPG</filename>
+	<path>C:\Users\SHI-PC\Desktop\labelImg-master_test\data\Image\72754_f_0.JPG</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>1143</width>
+		<height>1524</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>20 Size and vertical height of the nose	4 High nasal bridge</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>353</xmin>
+			<ymin>504</ymin>
+			<xmax>746</xmax>
+			<ymax>1023</ymax>
+		</bndbox>
+	</object>
+</annotation>

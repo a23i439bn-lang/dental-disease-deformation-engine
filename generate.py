@@ -125,7 +125,7 @@ class IdentityMetrics:
     backbone_name: str
     used_fallback: bool
 
-
+''' コマンドライン引数を処理する関数 '''
 class FlowRefinementCNN(nn.Module):
     def __init__(self, in_channels: int = 4, hidden_dim: int = 32) -> None:
         super().__init__()
@@ -144,7 +144,7 @@ class FlowRefinementCNN(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.network(x)
 
-
+''' コマンドライン引数を処理する関数 '''
 class SimpleIdentityEncoder(nn.Module):
     def __init__(self, embedding_dim: int = 512) -> None:
         super().__init__()
@@ -165,7 +165,7 @@ class SimpleIdentityEncoder(nn.Module):
         features = self.backbone(image).flatten(1)
         return F.normalize(self.proj(features), dim=-1)
 
-
+'''コマンドライン引数を処理する関数 '''
 class ArcFaceIdentityEncoder(nn.Module):
     def __init__(self, device: str, embedding_dim: int = 512) -> None:
         super().__init__()

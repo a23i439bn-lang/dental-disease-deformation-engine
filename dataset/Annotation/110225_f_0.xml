@@ -1,0 +1,26 @@
+<annotation>
+	<folder>Image</folder>
+	<filename>110225_f_0.jpg</filename>
+	<path>C:\Users\SHI-PC\Desktop\labelImg-master_test\data\Image\110225_f_0.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>930</width>
+		<height>1240</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>3 Facial assymmetry	3 Almost symmetric face</name>
+		<pose>Unspecified</pose>
+		<truncated>1</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>53</xmin>
+			<ymin>226</ymin>
+			<xmax>879</xmax>
+			<ymax>1240</ymax>
+		</bndbox>
+	</object>
+</annotation>

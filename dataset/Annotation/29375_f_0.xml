@@ -1,0 +1,26 @@
+<annotation>
+	<folder>Image</folder>
+	<filename>29375_f_0.JPG</filename>
+	<path>C:\Users\SHI-PC\Desktop\labelImg-master_test\data\Image\29375_f_0.JPG</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>867</width>
+		<height>1156</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>1 Upper, middle, and lower facial height 	1 No evaluation</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>51</xmin>
+			<ymin>45</ymin>
+			<xmax>837</xmax>
+			<ymax>1145</ymax>
+		</bndbox>
+	</object>
+</annotation>

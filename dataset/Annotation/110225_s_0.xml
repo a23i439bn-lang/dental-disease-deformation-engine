@@ -1,0 +1,50 @@
+<annotation>
+	<folder>Image</folder>
+	<filename>110225_s_0.jpg</filename>
+	<path>C:\Users\SHI-PC\Desktop\labelImg-master_test\data\Image\110225_s_0.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>838</width>
+		<height>1257</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>4 Facial profile	5 Convex type profile</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>311</xmin>
+			<ymin>103</ymin>
+			<xmax>720</xmax>
+			<ymax>1253</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>9 Anteroposterior position of a chin	4 Retruding chin</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>275</xmin>
+			<ymin>643</ymin>
+			<xmax>712</xmax>
+			<ymax>1244</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>10 Protrusion and retrusion of lips	5 Protruding upper lip</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>351</xmin>
+			<ymin>746</ymin>
+			<xmax>696</xmax>
+			<ymax>1116</ymax>
+		</bndbox>
+	</object>
+</annotation>

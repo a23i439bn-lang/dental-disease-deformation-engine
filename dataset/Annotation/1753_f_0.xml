@@ -1,0 +1,38 @@
+<annotation>
+	<folder>Image</folder>
+	<filename>1753_f_0.JPG</filename>
+	<path>C:\Users\SHI-PC\Desktop\labelImg-master_test\data\Image\1753_f_0.JPG</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>903</width>
+		<height>1204</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>7 Inclination of a mouth	4 The left conor of the mouth is located in a higher vertical position than the right.</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>273</xmin>
+			<ymin>748</ymin>
+			<xmax>669</xmax>
+			<ymax>935</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>13 Scars	3 Scar on left side of the upper lip</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>339</xmin>
+			<ymin>648</ymin>
+			<xmax>594</xmax>
+			<ymax>809</ymax>
+		</bndbox>
+	</object>
+</annotation>

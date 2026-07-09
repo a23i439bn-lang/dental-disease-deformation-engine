@@ -1,0 +1,26 @@
+<annotation>
+	<folder>Image</folder>
+	<filename>84108_f_0.JPG</filename>
+	<path>C:\Users\SHI-PC\Desktop\labelImg-master_test\data\Image\84108_f_0.JPG</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>825</width>
+		<height>1100</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>3 Facial assymmetry	4 Symmetric face</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>38</xmin>
+			<ymin>115</ymin>
+			<xmax>795</xmax>
+			<ymax>994</ymax>
+		</bndbox>
+	</object>
+</annotation>

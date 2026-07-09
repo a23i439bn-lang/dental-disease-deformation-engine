@@ -1,0 +1,38 @@
+<annotation>
+	<folder>Image</folder>
+	<filename>111853_s_0.jpg</filename>
+	<path>C:\Users\SHI-PC\Desktop\labelImg-master_test\data\Image\111853_s_0.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>1322</width>
+		<height>1983</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>4 Facial profile	5 Convex type profile</name>
+		<pose>Unspecified</pose>
+		<truncated>1</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>580</xmin>
+			<ymin>327</ymin>
+			<xmax>1241</xmax>
+			<ymax>1983</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>5 Nasolabial angle	5 Greater nasolabial angle</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>790</xmin>
+			<ymin>1053</ymin>
+			<xmax>1249</xmax>
+			<ymax>1539</ymax>
+		</bndbox>
+	</object>
+</annotation>

@@ -1,0 +1,26 @@
+<annotation>
+	<folder>Image</folder>
+	<filename>90172_f_0.JPG</filename>
+	<path>C:\Users\SHI-PC\Desktop\labelImg-master_test\data\Image\90172_f_0.JPG</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>1095</width>
+		<height>1460</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>3 Facial assymmetry	4 Symmetric face</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>83</xmin>
+			<ymin>89</ymin>
+			<xmax>1030</xmax>
+			<ymax>1280</ymax>
+		</bndbox>
+	</object>
+</annotation>
